@@ -34,6 +34,7 @@ dependencies {
     compile "ch.qos.logback:logback-classic:$logback_version"
     compile "io.ktor:ktor-server-core:$ktor_version"
     compile "io.ktor:ktor-html-builder:$ktor_version"
+    compile "io.ktor:ktor-gson:$ktor_version"
     compile "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0"
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
     compile 'com.github.jasync-sql:jasync-postgresql:0.8.63'

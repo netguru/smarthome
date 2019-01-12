@@ -8,6 +8,8 @@ import com.github.jasync.sql.db.pool.ConnectionPool
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import io.ktor.application.*
+import io.ktor.features.ContentNegotiation
+import io.ktor.gson.gson
 import io.ktor.response.*
 import io.ktor.request.*
 import io.ktor.routing.*
@@ -43,19 +45,21 @@ fun Application.module(testing: Boolean = false) {
             TimeUnit.SECONDS.toMillis(30)   // validationInterval
         )
     )
+    connection.connect().get()
 
+    val db = Database(connection)
+
+    install(ContentNegotiation){
+        gson {
+            setPrettyPrinting()
+        }
+    }
+
+    //TODO: refactor this into separate file and function
     GlobalScope.launch {
         val mqttClient = MqttClient(PahoAsync("tcp://192.168.0.21:1883", "ktor-server"))
         mqttClient.connect("pi", "spitulis")
         log.debug("mqtt connected")
-
-        connection.connect().get()
-        val queryResult = connection.sendPreparedStatementAwait("select * from test")
-        for (rowData in queryResult.rows) {
-            val id = rowData.getInt("id")
-            val test = rowData.getString("test")
-            log.debug("BOCHEN = $id, $test")
-        }
 
         for (message in mqttClient.subscribe(MqttClient.ALL_TOPICS)) {
             log.debug("Received $message")
@@ -63,37 +67,56 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
+        trace { application.log.trace(it.buildText()) }
         get("/") {
             //status page
-            call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
+
         }
 
         get("/admin") {
             //admin page (add and remove sensors)
+            val sensors = db.getAllSensors()
             call.respondHtml {
                 body {
-                    h1 { +"HTML" }
                     ul {
-                        for (n in 1..10) {
-                            li { +"$n" }
+                        sensors.forEach { sensor ->
+                            li { +"${sensor.name} - ${sensor.topic} - ${sensor.transform}" }
                         }
                     }
                 }
             }
         }
 
-        put("/add_sensor"){
+        get("/get_all"){
+            //returns all sensors
+        }
 
+        get("/get_name"){
+            //return sensor for name
+        }
+
+        get("/get_all_for_topic"){
+            //return all sensors for topic
+        }
+
+        put("/add_sensor"){
+            val sensor = call.receive<AddSensorReq>()
+            //TODO: add error handling when could not receive object
+            db.addSensor(sensor)
+            call.respond(HttpStatusCode.Created)
         }
 
         delete("/remove_sensor"){
+            //remove by id
+        }
 
+        delete("/remove_by_topic"){
+            //remove all sensors that match topic
         }
 
     }
 }
 
 
-suspend fun Connection.sendPreparedStatementAwait(query: String, values: List<Any> = emptyList()): QueryResult =
-    this.sendPreparedStatement(query, values).await()
+
 
