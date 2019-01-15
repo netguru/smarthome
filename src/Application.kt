@@ -2,8 +2,6 @@ package com.netguru
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
-import com.github.jasync.sql.db.QueryResult
-import com.github.jasync.sql.db.general.ArrayRowData
 import com.github.jasync.sql.db.pool.ConnectionPool
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
@@ -14,11 +12,9 @@ import io.ktor.response.*
 import io.ktor.request.*
 import io.ktor.routing.*
 import io.ktor.http.*
-import io.ktor.html.*
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.await
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.html.*
 import java.util.concurrent.TimeUnit
 
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient as PahoAsync
@@ -55,68 +51,70 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
+    val subscribeChannel = Channel<Sensor>()
+
     //TODO: refactor this into separate file and function
     GlobalScope.launch {
         val mqttClient = MqttClient(PahoAsync("tcp://192.168.0.21:1883", "ktor-server"))
+        //TODO: refactor user / pass to some env variable / pass store
         mqttClient.connect("pi", "spitulis")
         log.debug("mqtt connected")
 
-        for (message in mqttClient.subscribe(MqttClient.ALL_TOPICS)) {
-            log.debug("Received $message")
+        for ( sensor in subscribeChannel){
+            launch {
+                log.debug("subscribing to sensor at topic ${sensor.topic}")
+                for( message in  mqttClient.subscribe(sensor.topic)) {
+                    log.debug("message in ${sensor.topic} = $message")
+                    db.saveEvent(sensor.id, message, transform(message, sensor.transform))
+                }
+            }
+        }
+
+        //subscribe to all sensors at startup
+        db.getAllSensors().forEach {
+           subscribeChannel.send(it)
         }
     }
 
     routing {
         trace { application.log.trace(it.buildText()) }
-        get("/") {
-            //status page
 
-        }
-
-        get("/admin") {
-            //admin page (add and remove sensors)
-            val sensors = db.getAllSensors()
-            call.respondHtml {
-                body {
-                    ul {
-                        sensors.forEach { sensor ->
-                            li { +"${sensor.name} - ${sensor.topic} - ${sensor.transform}" }
-                        }
-                    }
-                }
-            }
-        }
-
-        get("/get_all"){
+        get("/get_sensors_all"){
             //returns all sensors
-        }
-
-        get("/get_name"){
-            //return sensor for name
-        }
-
-        get("/get_all_for_topic"){
-            //return all sensors for topic
+            call.respond (db.getAllSensors())
         }
 
         put("/add_sensor"){
-            val sensor = call.receive<AddSensorReq>()
+            val addSensorReq = call.receive<AddSensorReq>()
             //TODO: add error handling when could not receive object
-            db.addSensor(sensor)
+            val sensor = db.addSensor(addSensorReq)
+            subscribeChannel.send(sensor)
             call.respond(HttpStatusCode.Created)
         }
 
-        delete("/remove_sensor"){
-            //remove by id
+        delete("/remove_sensor/{id}"){
+
+            val id = call.parameters["id"]?.toInt()
+            if(id!= null){
+                db.removeSensor(id)
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
+            }
         }
 
-        delete("/remove_by_topic"){
-            //remove all sensors that match topic
+
+        get("/get_events_for_sensor/{id}/"){
+            val id = call.parameters["id"]?.toInt()
+            call.respond(db.getEvents(id?:0))
         }
 
     }
 }
 
+fun transform(data: String, pattern:String): String {
+    return data
+}
 
 
 
