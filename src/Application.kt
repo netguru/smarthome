@@ -49,40 +49,16 @@ fun Application.module(testing: Boolean = false) {
 
     install(ContentNegotiation){
         gson {
-            setPrettyPrinting()
-            //TODO: set date format
+            setDateFormat(DateFormat.SHORT)
         }
     }
 
     val subscribeChannel = Channel<Sensor>()
+    val mqttClient = MqttClient(PahoAsync("tcp://192.168.0.21:1883", "ktor-server"))
+    val worker = MqttWorker(mqttClient, db, subscribeChannel, log)
 
-    //TODO: refactor this into separate file and function
     GlobalScope.launch {
-        val mqttClient = MqttClient(PahoAsync("tcp://192.168.0.21:1883", "ktor-server"))
-        //TODO: refactor user / pass to some env variable / pass store
-        mqttClient.connect("pi", "spitulis")
-        log.debug("mqtt connected")
-
-        log.debug("before for loop")
-
-        launch {
-            for ( sensor in subscribeChannel){
-                launch {
-                    log.debug("subscribing to sensor at topic ${sensor.topic}")
-                    for( message in  mqttClient.subscribe(sensor.topic)) {
-                        log.debug("message in ${sensor.topic} = $message")
-                        db.saveEvent(sensor.id, transform(message, sensor.transform, sensor.returnType))
-                        //TODO: add posting event to refresh using websocket
-                    }
-                }
-            }
-        }
-        log.debug("after for loop")
-
-        //subscribe to all sensors at startup
-        db.getAllSensors().forEach {
-           subscribeChannel.send(it)
-        }
+        worker.doWork()
     }
 
     routing {

@@ -3,7 +3,8 @@ package com.netguru
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import kotlinx.coroutines.future.await
-import org.joda.time.LocalDateTime
+import java.time.LocalDateTime
+
 
 enum class TransformReturnType {
     BOOLEAN, STRING, INT, FLOAT;
@@ -25,7 +26,6 @@ data class Event(
     val id: Int,
     val sensorId: Int,
     val timeStamp: LocalDateTime,
-    val rawData: String,
     val data: String
 )
 
@@ -80,13 +80,26 @@ class Database(private val connection: Connection) {
             Event(
                 it.getInt("id") ?: 0,
                 it.getInt("sensor_id") ?: 0,
-                it.getDate("timestamp") ?: LocalDateTime(),
-                it.getString("raw_data") ?: "",
+                it.getDate("timestamp").toJavaLocalDateTime(),
                 it.getString("data") ?: ""
             )
         }
     }
 
+}
+
+fun org.joda.time.LocalDateTime?.toJavaLocalDateTime(): LocalDateTime {
+    return if (this == null) LocalDateTime.now()
+    else
+        LocalDateTime.of(
+            year,
+            monthOfYear,
+            dayOfMonth,
+            hourOfDay,
+            minuteOfHour,
+            secondOfMinute,
+            millisOfSecond * 1_000_000
+        )
 }
 
 suspend fun Connection.sendPreparedStatementAwait(query: String, values: List<Any> = emptyList()): QueryResult =
