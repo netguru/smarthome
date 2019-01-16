@@ -38,4 +38,5 @@ dependencies {
     compile "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0"
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
     compile 'com.github.jasync-sql:jasync-postgresql:0.8.63'
+    compile 'com.jayway.jsonpath:json-path:2.4.0'
 }

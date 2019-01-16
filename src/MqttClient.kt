@@ -38,7 +38,7 @@ class MqttClient(private val client: PahoClient) {
         val channel = channelsMap[topic] ?: Channel()
 
         client.subscribe(topic,0) { _, message ->
-            channel.offer("$topic: $message")
+            channel.offer("$message")
         }.actionCallback = object : IMqttActionListener {
             override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable) {
                 channel.close()

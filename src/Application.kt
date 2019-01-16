@@ -5,6 +5,7 @@ import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.pool.ConnectionPool
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
+import com.jayway.jsonpath.JsonPath
 import io.ktor.application.*
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
@@ -15,6 +16,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import java.text.DateFormat
 import java.util.concurrent.TimeUnit
 
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient as PahoAsync
@@ -48,6 +50,7 @@ fun Application.module(testing: Boolean = false) {
     install(ContentNegotiation){
         gson {
             setPrettyPrinting()
+            //TODO: set date format
         }
     }
 
@@ -60,15 +63,21 @@ fun Application.module(testing: Boolean = false) {
         mqttClient.connect("pi", "spitulis")
         log.debug("mqtt connected")
 
-        for ( sensor in subscribeChannel){
-            launch {
-                log.debug("subscribing to sensor at topic ${sensor.topic}")
-                for( message in  mqttClient.subscribe(sensor.topic)) {
-                    log.debug("message in ${sensor.topic} = $message")
-                    db.saveEvent(sensor.id, message, transform(message, sensor.transform))
+        log.debug("before for loop")
+
+        launch {
+            for ( sensor in subscribeChannel){
+                launch {
+                    log.debug("subscribing to sensor at topic ${sensor.topic}")
+                    for( message in  mqttClient.subscribe(sensor.topic)) {
+                        log.debug("message in ${sensor.topic} = $message")
+                        db.saveEvent(sensor.id, transform(message, sensor.transform, sensor.returnType))
+                        //TODO: add posting event to refresh using websocket
+                    }
                 }
             }
         }
+        log.debug("after for loop")
 
         //subscribe to all sensors at startup
         db.getAllSensors().forEach {
@@ -112,8 +121,13 @@ fun Application.module(testing: Boolean = false) {
     }
 }
 
-fun transform(data: String, pattern:String): String {
-    return data
+fun transform(data: String, pattern:String, returnType: TransformReturnType): String {
+    return when(returnType){
+        TransformReturnType.BOOLEAN -> JsonPath.parse(data).read<Boolean>(pattern).toString()
+        TransformReturnType.STRING -> JsonPath.parse(data).read<String>(pattern).toString()
+        TransformReturnType.INT -> JsonPath.parse(data).read<Int>(pattern).toString()
+        TransformReturnType.FLOAT -> JsonPath.parse(data).read<Float>(pattern).toString()
+    }
 }
 
 

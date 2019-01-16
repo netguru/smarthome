@@ -2,16 +2,23 @@ package com.netguru
 
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
-import org.joda.time.DateTime
 import org.joda.time.LocalDateTime
+
+enum class TransformReturnType {
+    BOOLEAN, STRING, INT, FLOAT;
+
+    companion object {
+        fun of(value: String) = valueOf(value.toUpperCase())
+    }
+}
 
 data class Sensor(
     val id: Int,
     val name: String,
     val topic: String,
-    val transform: String
+    val transform: String,
+    val returnType: TransformReturnType
 )
 
 data class Event(
@@ -30,10 +37,16 @@ class Database(private val connection: Connection) {
 
     suspend fun addSensor(sensor: AddSensorReq): Sensor {
         val result = connection.sendPreparedStatementAwait(
-            "INSERT INTO SENSORS (NAME, TOPIC, TRANSFORM) VALUES (?,?,?) RETURNING id",
+            "INSERT INTO SENSORS (NAME, TOPIC, TRANSFORM, RETURN_TYPE) VALUES (?,?,?,?) RETURNING id",
             sensor.toValuesArray()
         )
-        return Sensor(result.rows[0].getInt("id")?:0, sensor.name, sensor.topic, sensor.transform)
+        return Sensor(
+            result.rows[0].getInt("id") ?: 0,
+            sensor.name,
+            sensor.topic,
+            sensor.transform,
+            TransformReturnType.of(sensor.returnType)
+        )
     }
 
     suspend fun getAllSensors(): List<Sensor> {
@@ -43,7 +56,8 @@ class Database(private val connection: Connection) {
                 it.getInt("id") ?: 0,
                 it.getString("name") ?: "",
                 it.getString("topic") ?: "",
-                it.getString("transform") ?: ""
+                it.getString("transform") ?: "",
+                TransformReturnType.of(it.getString("return_type") ?: "boolean")
             )
         }.toList()
     }
@@ -53,18 +67,23 @@ class Database(private val connection: Connection) {
         connection.sendPreparedStatementAwait("DELETE FROM SENSORS WHERE id = ? ", listOf(id))
     }
 
-    suspend fun saveEvent(id: Int, message: String, transformed: String) {
-        connection.sendPreparedStatementAwait("INSERT INTO events (sensor_id, timestamp, raw_data, data) VALUES (?, now(), ?, ?", listOf(id, message, transformed))
+    suspend fun saveEvent(id: Int, transformed: String) {
+        connection.sendPreparedStatementAwait(
+            "INSERT INTO events (sensor_id, timestamp, raw_data, data) VALUES (?, now(), ?)",
+            listOf(id, transformed)
+        )
     }
 
     suspend fun getEvents(id: Int): List<Event> {
         val result = connection.sendPreparedStatementAwait("SELECT * FROM EVENTS WHERE sensor_id=?", listOf(id))
         return result.rows.map {
-            Event(it.getInt("id")?:0,
-                it.getInt("sensor_id")?:0,
-                it.getDate("timestamp")?:LocalDateTime(),
-                it.getString("raw_data")?:"",
-                it.getString("data")?:"")
+            Event(
+                it.getInt("id") ?: 0,
+                it.getInt("sensor_id") ?: 0,
+                it.getDate("timestamp") ?: LocalDateTime(),
+                it.getString("raw_data") ?: "",
+                it.getString("data") ?: ""
+            )
         }
     }
 
