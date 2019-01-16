@@ -7,6 +7,7 @@ import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import com.jayway.jsonpath.JsonPath
 import io.ktor.application.*
+import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.response.*
@@ -26,6 +27,10 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+    install(CORS){
+        anyHost()
+        header(HttpHeaders.AccessControlAllowOrigin)
+    }
 
     val connection: Connection = ConnectionPool(
         PostgreSQLConnectionFactory(
