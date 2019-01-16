@@ -5,12 +5,12 @@
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="content" class="content">
-      <md-table v-model="content" md-card>
+      <md-table v-model="content" md-card @md-selected="onSelect">
       <md-table-toolbar>
         <h1 class="md-title">Configured sensors</h1>
       </md-table-toolbar>
 
-      <md-table-row slot="md-table-row" slot-scope="{ item }">
+      <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="single">
         <md-table-cell md-label="ID"  md-numeric>{{ item.id }}</md-table-cell>
         <md-table-cell md-label="Name" >{{ item.name }}</md-table-cell>
         <md-table-cell md-label="Topic" >{{ item.topic }}</md-table-cell>
@@ -18,6 +18,9 @@
         <md-table-cell md-label="Return type" >{{ item.returnType }}</md-table-cell>
       </md-table-row>
     </md-table>
+
+    <p>Selected:</p>
+    {{ selected }}
     </div>
   </div>
 </template>
@@ -30,6 +33,7 @@ export default {
   name: "Admin",
   data() {
     return {
+        selected: {},
       loading: false,
       content: null,
       error: null,
@@ -58,6 +62,9 @@ export default {
           this.error = err.toString();
         });
     },
+     onSelect (item) {
+        this.selected = item;
+      },
   },
 };
 </script>
