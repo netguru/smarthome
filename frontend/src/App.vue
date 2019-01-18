@@ -1,5 +1,5 @@
 <template>
-  <div >
+  <div class="app">
     <div class="nav">
       <router-link to="/">Home</router-link> |
       <router-link to="/admin">Admin</router-link>
@@ -9,9 +9,12 @@
 </template>
 
 <style lang="scss" scoped>
+.app {
+  padding-left: 30px;
+  padding-right: 30px;
+}
 .nav {
   a {
-    font-weight: bold;
     color: #2c3e50;
     &.router-link-exact-active {
       color: #42b983;

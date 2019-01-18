@@ -29,7 +29,12 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 fun Application.module(testing: Boolean = false) {
     install(CORS){
         anyHost()
+        method(HttpMethod.Get)
+        method(HttpMethod.Put)
+        method(HttpMethod.Delete)
+        method(HttpMethod.Patch)
         header(HttpHeaders.AccessControlAllowOrigin)
+        header(HttpHeaders.AccessControlAllowMethods)
     }
 
     val connection: Connection = ConnectionPool(
@@ -87,6 +92,7 @@ fun Application.module(testing: Boolean = false) {
             val id = call.parameters["id"]?.toInt()
             if(id!= null){
                 db.removeSensor(id)
+                //TODO: unsubscribe from topic
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.BadRequest)
