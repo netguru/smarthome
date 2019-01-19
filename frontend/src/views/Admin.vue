@@ -36,7 +36,6 @@ import axios from 'axios';
 import EditSensorModal from '@/components/EditSensorModal.vue';
 import AddSensorModal from '@/components/AddSensorModal.vue';
 
-const host = 'http://localhost:8080';
 export default {
   name: 'Admin',
   data() {
@@ -63,7 +62,7 @@ export default {
       this.error = null;
       this.loading = true;
       axios
-        .get(`${host}/get_sensors_all`)
+        .get(`${this.$store.state.host}//get_sensors_all`)
         .then((response) => {
           this.loading = false;
           this.content = response.data;

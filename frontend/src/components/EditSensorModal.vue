@@ -12,7 +12,7 @@
 </template>
 <script>
 import axios from 'axios';
-import clonedeep from 'lodash.clonedeep'
+import clonedeep from 'lodash.clonedeep';
 import Modal from '@/components/Modal.vue';
 import EditFields from '@/components/EditFields.vue';
 

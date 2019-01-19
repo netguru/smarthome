@@ -1,5 +1,6 @@
 package com.netguru
 
+import com.jayway.jsonpath.JsonPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -51,6 +52,15 @@ class MqttWorker(
         //subscribe to all sensors at startup
         db.getAllSensors().forEach {
             subscribeChannel.send(WorkerCmd.Subscribe(it))
+        }
+    }
+
+    private fun transform(data: String, pattern:String, returnType: TransformReturnType): String {
+        return when(returnType){
+            TransformReturnType.BOOLEAN -> JsonPath.parse(data).read<Boolean>(pattern).toString()
+            TransformReturnType.STRING -> JsonPath.parse(data).read<String>(pattern).toString()
+            TransformReturnType.INT -> JsonPath.parse(data).read<Int>(pattern).toString()
+            TransformReturnType.FLOAT -> JsonPath.parse(data).read<Float>(pattern).toString()
         }
     }
 }

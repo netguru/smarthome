@@ -71,13 +71,13 @@ class Database(private val connection: Connection) {
 
     suspend fun saveEvent(id: Int, transformed: String) {
         connection.sendPreparedStatementAwait(
-            "INSERT INTO events (sensor_id, timestamp, raw_data, data) VALUES (?, now(), ?)",
+            "INSERT INTO events (sensor_id, timestamp, data) VALUES (?, now(), ?)",
             listOf(id, transformed)
         )
     }
 
-    suspend fun getEvents(id: Int): List<Event> {
-        val result = connection.sendPreparedStatementAwait("SELECT * FROM EVENTS WHERE sensor_id=?", listOf(id))
+    suspend fun getEvents(id: Int, limit: Int): List<Event> {
+        val result = connection.sendPreparedStatementAwait("SELECT * FROM EVENTS WHERE sensor_id=? ORDER BY timestamp DESC LIMIT ?", listOf(id,limit))
         return result.rows.map {
             Event(
                 it.getInt("id") ?: 0,

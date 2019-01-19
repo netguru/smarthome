@@ -113,20 +113,12 @@ fun Application.module(testing: Boolean = false) {
         }
 
 
-        get("/get_events_for_sensor/{id}/"){
+        get("/get_events_for_sensor/{id}/{limit}"){
             val id = call.parameters["id"]?.toInt()
-            call.respond(db.getEvents(id?:0))
+            val limit = call.parameters["limit"]?.toInt()
+            call.respond(db.getEvents(id?:0, limit?:10))
         }
 
-    }
-}
-
-fun transform(data: String, pattern:String, returnType: TransformReturnType): String {
-    return when(returnType){
-        TransformReturnType.BOOLEAN -> JsonPath.parse(data).read<Boolean>(pattern).toString()
-        TransformReturnType.STRING -> JsonPath.parse(data).read<String>(pattern).toString()
-        TransformReturnType.INT -> JsonPath.parse(data).read<Int>(pattern).toString()
-        TransformReturnType.FLOAT -> JsonPath.parse(data).read<Float>(pattern).toString()
     }
 }
 
