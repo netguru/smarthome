@@ -63,7 +63,7 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
-    val subscribeChannel = Channel<Sensor>()
+    val subscribeChannel = Channel<WorkerCmd>()
     val mqttClient = MqttClient(PahoAsync("tcp://192.168.0.21:1883", "ktor-server"))
     val worker = MqttWorker(mqttClient, db, subscribeChannel, log)
 
@@ -83,7 +83,7 @@ fun Application.module(testing: Boolean = false) {
             val addSensorReq = call.receive<AddSensorReq>()
             //TODO: add error handling when could not receive object
             val sensor = db.addSensor(addSensorReq)
-            subscribeChannel.send(sensor)
+            subscribeChannel.send(WorkerCmd.Subscribe(sensor))
             call.respond(HttpStatusCode.Created)
         }
 
@@ -92,7 +92,20 @@ fun Application.module(testing: Boolean = false) {
             val id = call.parameters["id"]?.toInt()
             if(id!= null){
                 db.removeSensor(id)
-                //TODO: unsubscribe from topic
+                subscribeChannel.send(WorkerCmd.Unsubscribe(id))
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
+            }
+        }
+
+        patch("/modify_sensor/{id}"){
+            val id = call.parameters["id"]?.toInt()
+            val sensorData = call.receive<AddSensorReq>()
+            if(id != null){
+                subscribeChannel.send(WorkerCmd.Unsubscribe(id))
+                val sensor = db.modifySensor(id, sensorData)
+                subscribeChannel.send(WorkerCmd.Subscribe(sensor))
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.BadRequest)

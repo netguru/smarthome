@@ -5,7 +5,7 @@
     <EditFields v-model="edit"/>
 
     <div>
-      <md-button>Save changes</md-button>
+      <md-button @click="saveChanges">Save changes</md-button>
       <md-button @click="removeSensor">Remove sensor</md-button>
     </div>
   </Modal>
@@ -31,6 +31,23 @@ export default {
     removeSensor() {
       axios
         .delete(`${this.$store.state.host}/remove_sensor/${this.item.id}`)
+        .then((response) => {
+          if (response.status === 200) {
+            this.$emit('closeModal', true);
+          }
+        });
+    },
+    saveChanges() {
+      axios
+        .patch(
+          `${this.$store.state.host}/modify_sensor/${this.item.id}`,
+          JSON.stringify(this.edit),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        )
         .then((response) => {
           if (response.status === 200) {
             this.$emit('closeModal', true);

@@ -2,6 +2,8 @@ package com.netguru
 
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.RowData
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
 import java.time.LocalDateTime
 
@@ -86,7 +88,27 @@ class Database(private val connection: Connection) {
         }
     }
 
+    suspend fun getSensor(id: Int): Sensor = coroutineScope {
+        val result = connection.sendPreparedStatementAwait("SELECT * FROM SENSORS WHERE id = ? LIMIT 1", listOf(id))
+        result.rows.map {
+            it.toSensor()
+        }.first()
+    }
+
+    suspend fun modifySensor(id: Int, sensorData: AddSensorReq): Sensor {
+        connection.sendPreparedStatementAwait("UPDATE SENSORS SET (name, topic, transform return_type) = (?,?,?,?) WHERE id=$id", sensorData.toValuesArray())
+        return Sensor(id, sensorData.name, sensorData.topic, sensorData.transform, TransformReturnType.of(sensorData.returnType))
+    }
+
 }
+
+fun RowData.toSensor()=Sensor(
+        getInt("id") ?: 0,
+        getString("name") ?: "",
+        getString("topic") ?: "",
+        getString("transform") ?: "",
+        TransformReturnType.of(getString("return_type") ?: "boolean")
+    )
 
 fun org.joda.time.LocalDateTime?.toJavaLocalDateTime(): LocalDateTime {
     return if (this == null) LocalDateTime.now()

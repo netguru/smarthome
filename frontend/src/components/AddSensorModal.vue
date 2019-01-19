@@ -42,8 +42,8 @@ export default {
           },
         )
         .then((response) => {
-            console.log(response);
-          if (response.status == 201) {
+          console.log(response);
+          if (response.status === 201) {
             console.log('emitting closemodal');
             this.$emit('closeModal', true);
           }

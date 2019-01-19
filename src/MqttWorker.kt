@@ -6,10 +6,15 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 
+sealed class WorkerCmd {
+    data class Subscribe(val sensor: Sensor): WorkerCmd()
+    data class Unsubscribe(val id: Int): WorkerCmd()
+}
+
 class MqttWorker(
     private val mqttClient: MqttClient,
     private val db: Database,
-    private val subscribeChannel: Channel<Sensor>,
+    private val subscribeChannel: Channel<WorkerCmd>,
     private val log: Logger
 ) {
 
@@ -18,25 +23,34 @@ class MqttWorker(
         mqttClient.connect("pi", "spitulis")
         log.debug("mqtt connected")
 
-        log.debug("before for loop")
-
         launch {
-            for ( sensor in subscribeChannel){
-                launch {
-                    log.debug("subscribing to sensor at topic ${sensor.topic}")
-                    for( message in  mqttClient.subscribe(sensor.topic)) {
-                        log.debug("message in ${sensor.topic} = $message")
-                        db.saveEvent(sensor.id, transform(message, sensor.transform, sensor.returnType))
-                        //TODO: add posting event to refresh using websocket
+            for ( command in subscribeChannel){
+                when(command){
+                    is WorkerCmd.Subscribe -> {
+                        launch {
+                            log.debug("subscribing to sensor at topic ${command.sensor.topic}")
+                            for( message in  mqttClient.subscribe(command.sensor.topic)) {
+                                log.debug("message in ${command.sensor.topic} = $message")
+                                db.saveEvent(command.sensor.id, transform(message, command.sensor.transform, command.sensor.returnType))
+                                //TODO: add posting event to refresh using websocket
+                            }
+                            log.debug("closing coroutine for ${command.sensor.id} topic: ${command.sensor.topic}")
+                        }
+                    }
+                    is WorkerCmd.Unsubscribe -> {
+                        launch {
+                            val sensor = db.getSensor(command.id)
+                            mqttClient.unsubscribe(sensor.topic)
+                        }
                     }
                 }
+
             }
         }
-        log.debug("after for loop")
 
         //subscribe to all sensors at startup
         db.getAllSensors().forEach {
-            subscribeChannel.send(it)
+            subscribeChannel.send(WorkerCmd.Subscribe(it))
         }
     }
 }
