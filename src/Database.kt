@@ -52,7 +52,7 @@ class Database(private val connection: Connection) {
     }
 
     suspend fun getAllSensors(): List<Sensor> {
-        val result = connection.sendPreparedStatementAwait("SELECT * FROM SENSORS")
+        val result = connection.sendPreparedStatementAwait("SELECT * FROM SENSORS ORDER BY id ASC")
         return result.rows.map {
             Sensor(
                 it.getInt("id") ?: 0,
@@ -96,7 +96,7 @@ class Database(private val connection: Connection) {
     }
 
     suspend fun modifySensor(id: Int, sensorData: AddSensorReq): Sensor {
-        connection.sendPreparedStatementAwait("UPDATE SENSORS SET (name, topic, transform return_type) = (?,?,?,?) WHERE id=$id", sensorData.toValuesArray())
+        connection.sendPreparedStatementAwait("UPDATE SENSORS SET (name, topic, transform,  return_type) = (?,?,?,?) WHERE id=$id", sensorData.toValuesArray())
         return Sensor(id, sensorData.name, sensorData.topic, sensorData.transform, TransformReturnType.of(sensorData.returnType))
     }
 

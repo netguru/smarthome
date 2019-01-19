@@ -12,6 +12,7 @@
 </template>
 <script>
 import axios from 'axios';
+import clonedeep from 'lodash.clonedeep'
 import Modal from '@/components/Modal.vue';
 import EditFields from '@/components/EditFields.vue';
 
@@ -57,7 +58,7 @@ export default {
   },
   data() {
     return {
-      edit: this.item,
+      edit: clonedeep(this.item),
     };
   },
 };
