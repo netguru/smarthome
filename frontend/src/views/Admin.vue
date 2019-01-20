@@ -1,61 +1,62 @@
 <template>
   <div class="admin">
-
-
     <div class="loading" v-if="loading">Loading...</div>
-
     <div v-if="error" class="error">{{ error }}</div>
 
-    <div v-if="content" class="content">
-      <md-table v-model="content" md-card @md-selected="onSelect">
-        <md-table-toolbar>
-          <h1 class="md-title">Configured sensors</h1>
-        </md-table-toolbar>
+    <v-card>
+    <v-toolbar color="indigo" dark>
+      <v-toolbar-title>Sensors</v-toolbar-title>
+       <v-btn
+              absolute
+              dark
+              fab
+              bottom
+              right
+              color="pink"
+            >
+              <v-icon>add</v-icon>
+            </v-btn>
+    </v-toolbar>
+    <v-list>
+      <v-list-tile v-for="item in content" :key="item.id" @click="onSelect(item)">
+        <v-list-tile-content>
+          <v-list-tile-title>#{{item.id}} {{item.name}} ({{item.topic}})</v-list-tile-title>
+        </v-list-tile-content>
+      </v-list-tile>
+    </v-list>
+    </v-card>
 
-        <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="single">
-          <md-table-cell md-label="ID" md-numeric>{{ item.id }}</md-table-cell>
-          <md-table-cell md-label="Name">{{ item.name }}</md-table-cell>
-          <md-table-cell md-label="Topic">{{ item.topic }}</md-table-cell>
-          <md-table-cell md-label="Transform">{{ item.transform }}</md-table-cell>
-          <md-table-cell md-label="Return type">{{ item.returnType }}</md-table-cell>
-        </md-table-row>
-      </md-table>
-
-      <md-button class="md-fab md-primary" @click="addSensor = true">
-        <md-icon>add</md-icon>
-      </md-button>
-    </div>
-
+   
     <EditSensorModal v-if="selected" :item="selected" @closeModal="editSensorClosed"/>
     <AddSensorModal v-if="addSensor" @closeModal="addSensorClosed"/>
   </div>
 </template>
 
 <script >
-import axios from 'axios';
-import EditSensorModal from '@/components/EditSensorModal.vue';
-import AddSensorModal from '@/components/AddSensorModal.vue';
+import axios from "axios";
+import EditSensorModal from "@/components/EditSensorModal.vue";
+import AddSensorModal from "@/components/AddSensorModal.vue";
 
 export default {
-  name: 'Admin',
+  name: "Admin",
   data() {
     return {
       selected: null,
       addSensor: false,
       loading: false,
       content: null,
-      error: null,
+      error: null
     };
   },
   created() {
     this.fetchData();
   },
   watch: {
-    $route: 'fetchData',
+    $route: "fetchData"
   },
   components: {
     EditSensorModal,
-    AddSensorModal,
+    AddSensorModal
   },
   methods: {
     fetchData() {
@@ -63,11 +64,11 @@ export default {
       this.loading = true;
       axios
         .get(`${this.$store.state.host}//get_sensors_all`)
-        .then((response) => {
+        .then(response => {
           this.loading = false;
           this.content = response.data;
         })
-        .catch((err) => {
+        .catch(err => {
           this.loading = false;
           this.error = err.toString();
         });
@@ -87,8 +88,8 @@ export default {
       if (refresh) {
         this.fetchData();
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
@@ -103,11 +104,11 @@ export default {
 .selected {
   padding: 20px;
 }
-.new{
+.new {
   padding: 20px;
 }
 .md-fab {
-   position: fixed;
+  position: fixed;
   bottom: 15px;
   right: 15px;
 }

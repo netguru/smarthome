@@ -21,16 +21,17 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
+
 export default {
-  name: "home",
+  name: 'home',
   data() {
     return {
       sensors: null,
       events: null,
       error: null,
       loading: false,
-      timer: ""
+      timer: '',
     };
   },
   created() {
@@ -42,44 +43,41 @@ export default {
   },
   methods: {
     fetchData() {
-      console.log("refresh");
+      console.log('refresh');
       this.loading = true;
       axios
         .get(`${this.$store.state.host}/get_sensors_all`)
-        .then(response => {
-          var index;
-          var promises = [];
+        .then((response) => {
+          let index;
+          const promises = [];
           this.sensors = response.data;
           for (index = 0; index < response.data.length; ++index) {
-            var sensor = response.data[index];
+            const sensor = response.data[index];
             promises.push(
               axios.get(
                 `${this.$store.state.host}/get_events_for_sensor/${
                   sensor.id
-                }/10`
-              )
+                }/10`,
+              ),
             );
           }
           Promise.all(promises)
-            .then(responses => {
+            .then((responses) => {
               this.loading = false;
-              this.events = responses.map((it, index) => {
-                return it.data;
-              });
+              this.events = responses.map((it, index) => it.data);
             })
-            .catch(err => {
+            .catch((err) => {
               this.loading = false;
               this.error = err.toString();
             });
         })
-        .catch(err => {
+        .catch((err) => {
           this.loading = false;
           this.error = err.toString();
         });
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
 </style>
-
