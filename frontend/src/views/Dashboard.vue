@@ -24,7 +24,7 @@
 import axios from 'axios';
 
 export default {
-  name: 'home',
+  name: 'Dashboard',
   data() {
     return {
       sensors: null,
@@ -51,7 +51,7 @@ export default {
           let index;
           const promises = [];
           this.sensors = response.data;
-          for (index = 0; index < response.data.length; ++index) {
+          for (index = 0; index < response.data.length; index += 1) {
             const sensor = response.data[index];
             promises.push(
               axios.get(
@@ -64,7 +64,7 @@ export default {
           Promise.all(promises)
             .then((responses) => {
               this.loading = false;
-              this.events = responses.map((it, index) => it.data);
+              this.events = responses.map(it => it.data);
             })
             .catch((err) => {
               this.loading = false;

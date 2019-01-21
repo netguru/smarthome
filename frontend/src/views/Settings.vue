@@ -26,37 +26,37 @@
     </v-list>
     </v-card>
 
-   
+
     <EditSensorModal v-if="selected" :item="selected" @closeModal="editSensorClosed"/>
     <AddSensorModal v-if="addSensor" @closeModal="addSensorClosed"/>
   </div>
 </template>
 
 <script >
-import axios from "axios";
-import EditSensorModal from "@/components/EditSensorModal.vue";
-import AddSensorModal from "@/components/AddSensorModal.vue";
+import axios from 'axios';
+import EditSensorModal from '@/components/EditSensorModal.vue';
+import AddSensorModal from '@/components/AddSensorModal.vue';
 
 export default {
-  name: "Admin",
+  name: 'Settings',
   data() {
     return {
       selected: null,
       addSensor: false,
       loading: false,
       content: null,
-      error: null
+      error: null,
     };
   },
   created() {
     this.fetchData();
   },
   watch: {
-    $route: "fetchData"
+    $route: 'fetchData',
   },
   components: {
     EditSensorModal,
-    AddSensorModal
+    AddSensorModal,
   },
   methods: {
     fetchData() {
@@ -64,11 +64,11 @@ export default {
       this.loading = true;
       axios
         .get(`${this.$store.state.host}//get_sensors_all`)
-        .then(response => {
+        .then((response) => {
           this.loading = false;
           this.content = response.data;
         })
-        .catch(err => {
+        .catch((err) => {
           this.loading = false;
           this.error = err.toString();
         });
@@ -88,8 +88,8 @@ export default {
       if (refresh) {
         this.fetchData();
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

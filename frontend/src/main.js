@@ -4,8 +4,14 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 
+
 Vue.config.productionTip = false;
-Vue.use(Vuetify);
+Vue.use(Vuetify, {
+  theme: {
+    primary: '#80D8FF',
+    accent: '#C6FF00',
+  },
+});
 
 new Vue({
   router,

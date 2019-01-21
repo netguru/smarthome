@@ -1,26 +1,21 @@
 <template>
-  <div class="app">
-    <v-app>
-    <div class="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/admin">Admin</router-link>
-    </div>
-    <router-view/>
-    </v-app>
-  </div>
+  <v-app>
+    <Navbar/>
+
+    <v-content>
+      <router-view></router-view>
+    </v-content>
+  </v-app>
 </template>
 
-<style lang="scss" scoped>
-.app {
-  padding-left: 30px;
-  padding-right: 30px;
-}
-.nav {
-  a {
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>
+<script>
+import Navbar from './components/Navbar.vue';
+
+export default {
+  components: { Navbar },
+  name: 'App',
+  data() {
+    return {};
+  },
+};
+</script>
