@@ -3,46 +3,56 @@
     <div class="loading" v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <v-card>
-    <v-toolbar color="indigo" dark>
-      <v-toolbar-title>Sensors</v-toolbar-title>
-       <v-btn
-              absolute
-              dark
-              fab
-              bottom
-              right
-              color="pink"
-            >
-              <v-icon>add</v-icon>
-            </v-btn>
-    </v-toolbar>
-    <v-list>
-      <v-list-tile v-for="item in content" :key="item.id" @click="onSelect(item)">
-        <v-list-tile-content>
-          <v-list-tile-title>#{{item.id}} {{item.name}} ({{item.topic}})</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
-    </v-list>
-    </v-card>
-
-
-    <EditSensorModal v-if="selected" :item="selected" @closeModal="editSensorClosed"/>
-    <AddSensorModal v-if="addSensor" @closeModal="addSensorClosed"/>
+    <v-container fluid>
+      <v-layout>
+        <v-flex xs4>
+          <v-card >
+              <v-card-title>Sensors</v-card-title>
+              
+              <AddSensorDialog @refresh="fetchData()"/>
+            <v-list>
+              <v-list-tile v-for="item in content" :key="item.id" @click="onSelect(item)">
+                <v-list-tile-content>
+                  <v-list-tile-title>#{{item.id}} {{item.name}} ({{item.topic}})</v-list-tile-title>
+                </v-list-tile-content>
+              </v-list-tile>
+            </v-list>
+          </v-card>
+        </v-flex >
+        <v-flex class="hidden-sm-and-down">
+          <v-card>
+            dupaaaa
+          </v-card>
+        </v-flex>
+      </v-layout>
+    </v-container>
   </div>
 </template>
 
 <script >
 import axios from 'axios';
-import EditSensorModal from '@/components/EditSensorModal.vue';
-import AddSensorModal from '@/components/AddSensorModal.vue';
+import AddSensorDialog from '@/components/AddSensorDialog.vue';
+import EditSensorDialog from '@/components/EditSensorDialog.vue';
 
 export default {
   name: 'Settings',
+  components: {
+    AddSensorDialog,
+    EditSensorDialog,
+  },
   data() {
     return {
-      selected: null,
       addSensor: false,
+      editSensor: {
+        open: false,
+        sensor: {
+          id: '',
+          name: '',
+          topic: '',
+          transform: '',
+          returnType: 'BOOLEAN',
+        },
+      },
       loading: false,
       content: null,
       error: null,
@@ -53,10 +63,6 @@ export default {
   },
   watch: {
     $route: 'fetchData',
-  },
-  components: {
-    EditSensorModal,
-    AddSensorModal,
   },
   methods: {
     fetchData() {
@@ -74,42 +80,12 @@ export default {
         });
     },
     onSelect(item) {
-      this.selected = item;
-      this.edit = item;
-    },
-    addSensorClosed(refresh) {
-      this.addSensor = false;
-      if (refresh) {
-        this.fetchData();
-      }
-    },
-    editSensorClosed(refresh) {
-      this.selected = null;
-      if (refresh) {
-        this.fetchData();
-      }
+      this.editSensor.open = true;
+      this.editSensor.sensor = item;
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.admin {
-  font-size: 15pt;
-}
-.md-card {
-  margin-top: 15px;
-  margin-bottom: 15px;
-}
-.selected {
-  padding: 20px;
-}
-.new {
-  padding: 20px;
-}
-.md-fab {
-  position: fixed;
-  bottom: 15px;
-  right: 15px;
-}
 </style>

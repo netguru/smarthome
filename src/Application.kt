@@ -83,7 +83,7 @@ fun Application.module(testing: Boolean = false) {
             val addSensorReq = call.receive<AddSensorReq>()
             //TODO: add error handling when could not receive object
             val sensor = db.addSensor(addSensorReq)
-            subscribeChannel.send(WorkerCmd.Subscribe(sensor))
+            subscribeChannel.offer(WorkerCmd.Subscribe(sensor))
             call.respond(HttpStatusCode.Created)
         }
 
@@ -92,7 +92,7 @@ fun Application.module(testing: Boolean = false) {
             val id = call.parameters["id"]?.toInt()
             if(id!= null){
                 db.removeSensor(id)
-                subscribeChannel.send(WorkerCmd.Unsubscribe(id))
+                subscribeChannel.offer(WorkerCmd.Unsubscribe(id))
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.BadRequest)
@@ -103,9 +103,9 @@ fun Application.module(testing: Boolean = false) {
             val id = call.parameters["id"]?.toInt()
             val sensorData = call.receive<AddSensorReq>()
             if(id != null){
-                subscribeChannel.send(WorkerCmd.Unsubscribe(id))
+                subscribeChannel.offer(WorkerCmd.Unsubscribe(id))
                 val sensor = db.modifySensor(id, sensorData)
-                subscribeChannel.send(WorkerCmd.Subscribe(sensor))
+                subscribeChannel.offer(WorkerCmd.Subscribe(sensor))
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.BadRequest)
