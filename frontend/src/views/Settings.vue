@@ -1,15 +1,20 @@
 <template>
-  <div class="admin">
+  <div >
     <div class="loading" v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <v-container fluid>
-      <v-layout>
-        <v-flex xs4>
-          <v-card >
-              <v-card-title>Sensors</v-card-title>
-              
-              <AddSensorDialog @refresh="fetchData()"/>
+    <v-container fluid fill-height>
+      <v-layout row wrap fill-height >
+        
+        <v-flex xs12 md5 v-if="content!==null">
+          <v-card>
+            <v-card-title class="dark" @click="deselect()">
+              <div>
+                Sensors
+                </div>
+              <v-spacer></v-spacer>
+              <AddSensorDialog @refresh='fetchData()' />
+            </v-card-title>
             <v-list>
               <v-list-tile v-for="item in content" :key="item.id" @click="onSelect(item)">
                 <v-list-tile-content>
@@ -18,41 +23,45 @@
               </v-list-tile>
             </v-list>
           </v-card>
+
         </v-flex >
-        <v-flex class="hidden-sm-and-down">
-          <v-card>
-            dupaaaa
-          </v-card>
+
+        <v-flex xs12 md7 grow class="pl-2">
+          <SensorEditCard v-if="editSensor"
+            title="Edit Sensor"
+            :sensor='editSensor'
+            deleteButton
+          />
+
+          <div v-if="editSensor===null">
+            click + to add sensor or select sensor to edit
+          </div>
+            
+          
         </v-flex>
+
       </v-layout>
     </v-container>
+
+
   </div>
 </template>
 
 <script >
 import axios from 'axios';
 import AddSensorDialog from '@/components/AddSensorDialog.vue';
-import EditSensorDialog from '@/components/EditSensorDialog.vue';
+import SensorEditCard from '@/components/SensorEditCard.vue';
 
 export default {
   name: 'Settings',
   components: {
     AddSensorDialog,
-    EditSensorDialog,
+    SensorEditCard,
   },
   data() {
     return {
       addSensor: false,
-      editSensor: {
-        open: false,
-        sensor: {
-          id: '',
-          name: '',
-          topic: '',
-          transform: '',
-          returnType: 'BOOLEAN',
-        },
-      },
+      editSensor: null,
       loading: false,
       content: null,
       error: null,
@@ -80,8 +89,11 @@ export default {
         });
     },
     onSelect(item) {
-      this.editSensor.open = true;
-      this.editSensor.sensor = item;
+      this.editSensor = null;
+      this.editSensor = item;
+    },
+    deselect() {
+      this.editSensor = null;
     },
   },
 };

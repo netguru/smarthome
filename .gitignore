@@ -6,3 +6,5 @@
 *.ipr
 *.iws
 /ktor-server-*
+.DS_Store
+**/.vs

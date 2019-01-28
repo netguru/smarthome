@@ -10,7 +10,7 @@ Vue.use(Vuetify, {
   theme: {
     primary: '#80D8FF',
     light: '#b5ffff',
-    dark: '#49a7cc',
+    dark: '#ffc0cb',
   },
 });
 
