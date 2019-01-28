@@ -30,6 +30,7 @@
     </v-card>
 </template>
 <script>
+import clonedeep from 'lodash.clonedeep'
 export default {
     name: 'SensorEdit',
     props: {
@@ -37,10 +38,16 @@ export default {
       deleteButton: Boolean,
       sensor: Object
     },
+
+    watch: {
+      sensor(value){
+        this.mSensor = clonedeep(value);
+      }
+    },
     data() {
       return {
         items: ['BOOLEAN', 'INT', 'FLOAT', 'STRING'],
-        mSensor: this.sensor,
+        mSensor: clonedeep(this.sensor),
       }
     },
 }

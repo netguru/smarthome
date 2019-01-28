@@ -4,9 +4,9 @@
     <div v-if="error" class="error">{{ error }}</div>
 
     <v-container fluid fill-height>
-      <v-layout row wrap fill-height >
+      <v-layout row wrap fill-height>
         
-        <v-flex xs12 md5 v-if="content!==null">
+        <v-flex xs12 md4 v-if="content!==null">
           <v-card>
             <v-card-title class="dark" @click="deselect()">
               <div>
@@ -26,7 +26,7 @@
 
         </v-flex >
 
-        <v-flex xs12 md7 grow class="pl-2">
+        <v-flex md8 grow class="pl-2 hidden-sm-and-down">
           <SensorEditCard v-if="editSensor"
             title="Edit Sensor"
             :sensor='editSensor'
@@ -36,8 +36,6 @@
           <div v-if="editSensor===null">
             click + to add sensor or select sensor to edit
           </div>
-            
-          
         </v-flex>
 
       </v-layout>
@@ -89,8 +87,7 @@ export default {
         });
     },
     onSelect(item) {
-      this.editSensor = null;
-      this.editSensor = item;
+       this.editSensor = item;
     },
     deselect() {
       this.editSensor = null;

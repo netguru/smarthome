@@ -17,16 +17,6 @@ export default {
       items: ['BOOLEAN', 'INT', 'FLOAT', 'STRING'],
     };
   },
-  computed: {
-    show: {
-      get() {
-        return this.value.open;
-      },
-      set(value) {
-        this.$emit('input', { ...this.value, open: value });
-      },
-    },
-  },
   methods: {
     saveClicked() {
       axios

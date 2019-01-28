@@ -5,7 +5,6 @@
     </v-btn>
     <SensorEditCard 
       title="Add sensor"
-      saveButton
       @saveClicked='saveClicked'
       @cancelClicked='isOpened= false'
       :sensor='{}'
