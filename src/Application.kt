@@ -65,7 +65,7 @@ fun Application.module(testing: Boolean = false) {
 
     val subscribeChannel = Channel<WorkerCmd>()
     val mqttClient = MqttClient(PahoAsync("tcp://192.168.0.21:1883", "ktor-server"))
-    val worker = MqttWorker(mqttClient, db, subscribeChannel, log)
+    val worker = MqttWorker(mqttClient, db, subscribeChannel)
 
     GlobalScope.launch {
         worker.doWork()

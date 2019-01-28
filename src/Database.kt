@@ -34,7 +34,10 @@ data class Event(
 class Database(private val connection: Connection) {
 
     fun createTables() {
-        //TODO
+        //TODO:
+        // 1. check if table version exists
+        // 2. check if table version row is lower than hardcoded
+        // 3. update db according to migration functions
     }
 
     suspend fun addSensor(sensor: AddSensorReq): Sensor {
