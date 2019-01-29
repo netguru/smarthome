@@ -9,7 +9,18 @@
           <v-card-title class="dark" @click="deselect()">
             <div>Sensors</div>
             <v-spacer></v-spacer>
-            <AddSensorDialog @refresh="fetchData()"/>
+            <v-dialog v-model="addSensor" :fullscreen="$vuetify.breakpoint.xsOnly">
+              <v-btn outline flat icon slot="activator">
+                <v-icon>add</v-icon>
+              </v-btn>
+              <SensorEditCard
+                title="Add sensor"
+                @cancelClicked="addSensor= false"
+                :sensor="{}"
+                @refresh="fetchData()"
+                createNew
+              />
+            </v-dialog>
           </v-card-title>
           <v-list>
             <v-list-tile v-for="item in content" :key="item.id" @click="onSelect(item)">
@@ -21,27 +32,37 @@
         </v-card>
       </v-flex>
       <v-flex md8 grow class="hidden-sm-and-down ml-3">
-        <SensorEditCard v-if="editSensor" title="Edit Sensor" :sensor="editSensor" deleteButton @refresh='fetchData()'/>
+        <SensorEditCard
+          v-if="editSensor"
+          title="Edit Sensor"
+          :sensor="editSensor"
+          deleteButton
+          @refresh="fetchData()"
+        />
 
-        <v-flex
-          v-if="editSensor===null"
-          fill-height
-        >click + to add sensor or select sensor to edit</v-flex>
+        <v-flex v-if="editSensor===null" fill-height>click + to add sensor or select sensor to edit</v-flex>
       </v-flex>
     </v-layout>
+    <v-dialog v-model="editSensorDialogShow" :fullscreen="$vuetify.breakpoint.xsOnly">
+      <SensorEditCard
+        v-if="editSensor"
+        title="Edit sensor"
+        @cancelClicked="deselect"
+        :sensor="editSensor"
+        @refresh="fetchData"
+      />
+    </v-dialog>
   </v-layout>
 </template>
 
 <script >
-import axios from 'axios';
-import AddSensorDialog from '@/components/AddSensorDialog.vue';
-import SensorEditCard from '@/components/SensorEditCard.vue';
+import axios from "axios";
+import SensorEditCard from "@/components/SensorEditCard.vue";
 
 export default {
-  name: 'Sensors',
+  name: "Sensors",
   components: {
-    AddSensorDialog,
-    SensorEditCard,
+    SensorEditCard
   },
   data() {
     return {
@@ -50,37 +71,43 @@ export default {
       loading: false,
       content: null,
       error: null,
+      editSensorDialogShow: false
     };
   },
   created() {
     this.fetchData();
   },
   watch: {
-    $route: 'fetchData',
+    $route: "fetchData"
   },
   methods: {
     fetchData() {
-      this.deselect()
+      this.deselect();
       this.error = null;
       this.loading = true;
       axios
         .get(`${this.$store.state.host}//get_sensors_all`)
-        .then((response) => {
+        .then(response => {
           this.loading = false;
           this.content = response.data;
         })
-        .catch((err) => {
+        .catch(err => {
           this.loading = false;
           this.error = err.toString();
         });
     },
     onSelect(item) {
       this.editSensor = item;
+      if (window.innerWidth <= 960) {
+        console.log("dupa");
+        this.editSensorDialogShow = true;
+      }
     },
     deselect() {
       this.editSensor = null;
-    },
-  },
+      this.editSensorDialogShow = false;
+    }
+  }
 };
 </script>
 
