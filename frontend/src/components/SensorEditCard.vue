@@ -23,34 +23,90 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn color="primary" @click="$emit('saveClicked', mSensor)">Save</v-btn>
+        <v-btn color="primary" @click="saveClicked">Save</v-btn>
         <v-btn color="primary" @click="$emit('cancelClicked')" class="hidden-sm-and-up">Cancel</v-btn>
-        <v-btn color="red"  dark @click="$emit('deleteClicked')" v-if="deleteButton">Delete</v-btn>
+        <v-btn color="red"  dark @click="removeClicked" v-if="deleteButton">Delete</v-btn>
       </v-card-actions>
     </v-card>
 </template>
 <script>
-import clonedeep from 'lodash.clonedeep'
-export default {
-    name: 'SensorEdit',
-    props: {
-      title: String,
-      deleteButton: Boolean,
-      sensor: Object
-    },
+import clonedeep from 'lodash.clonedeep';
+import axios from 'axios';
 
-    watch: {
-      sensor(value){
-        this.mSensor = clonedeep(value);
+export default {
+  name: 'SensorEdit',
+  props: {
+    title: String,
+    deleteButton: Boolean,
+    sensor: Object,
+    createNew: Boolean,
+  },
+
+  watch: {
+    sensor(value) {
+      this.mSensor = clonedeep(value);
+    },
+  },
+  data() {
+    return {
+      items: ['BOOLEAN', 'INT', 'FLOAT', 'STRING'],
+      mSensor: clonedeep(this.sensor),
+    };
+  },
+  methods: {
+    saveClicked() {
+      if(this.createNew){
+        this.create();
+      } else {
+        this.edit();
       }
     },
-    data() {
-      return {
-        items: ['BOOLEAN', 'INT', 'FLOAT', 'STRING'],
-        mSensor: clonedeep(this.sensor),
-      }
+    create() {
+      axios
+        .put(
+          `${this.$store.state.host}/add_sensor`,
+          JSON.stringify(this.mSensor),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        )
+        .then((response) => {
+          if (response.status === 201) {
+            this.$emit('refresh');
+          }
+        });
     },
-}
+    edit() {
+      axios
+        .patch(
+          `${this.$store.state.host}/modify_sensor/${this.mSensor.id}`,
+          JSON.stringify(this.mSensor),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        )
+        .then((response) => {
+          if (response.status === 200) {
+            this.$emit('refresh');
+          }
+        });
+    },
+    removeClicked() {
+      console.log("delete clicked")
+      axios
+        .delete(`${this.$store.state.host}/remove_sensor/${this.mSensor.id}`)
+        .then((response) => {
+          if (response.status === 200) {
+            this.$emit('refresh');
+          }
+        });
+    },
+  },
+};
 </script>
 <style lang="scss" scoped>
 .flexcard {
@@ -58,5 +114,3 @@ export default {
   flex-direction: column;
 }
 </style>
-
-

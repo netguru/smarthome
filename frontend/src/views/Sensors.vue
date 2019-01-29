@@ -21,7 +21,7 @@
         </v-card>
       </v-flex>
       <v-flex md8 grow class="hidden-sm-and-down ml-3">
-        <SensorEditCard v-if="editSensor" title="Edit Sensor" :sensor="editSensor" deleteButton/>
+        <SensorEditCard v-if="editSensor" title="Edit Sensor" :sensor="editSensor" deleteButton @refresh='fetchData()'/>
 
         <v-flex
           v-if="editSensor===null"
@@ -33,15 +33,15 @@
 </template>
 
 <script >
-import axios from "axios";
-import AddSensorDialog from "@/components/AddSensorDialog.vue";
-import SensorEditCard from "@/components/SensorEditCard.vue";
+import axios from 'axios';
+import AddSensorDialog from '@/components/AddSensorDialog.vue';
+import SensorEditCard from '@/components/SensorEditCard.vue';
 
 export default {
-  name: "Sensors",
+  name: 'Sensors',
   components: {
     AddSensorDialog,
-    SensorEditCard
+    SensorEditCard,
   },
   data() {
     return {
@@ -49,26 +49,27 @@ export default {
       editSensor: null,
       loading: false,
       content: null,
-      error: null
+      error: null,
     };
   },
   created() {
     this.fetchData();
   },
   watch: {
-    $route: "fetchData"
+    $route: 'fetchData',
   },
   methods: {
     fetchData() {
+      this.deselect()
       this.error = null;
       this.loading = true;
       axios
         .get(`${this.$store.state.host}//get_sensors_all`)
-        .then(response => {
+        .then((response) => {
           this.loading = false;
           this.content = response.data;
         })
-        .catch(err => {
+        .catch((err) => {
           this.loading = false;
           this.error = err.toString();
         });
@@ -78,8 +79,8 @@ export default {
     },
     deselect() {
       this.editSensor = null;
-    }
-  }
+    },
+  },
 };
 </script>
 

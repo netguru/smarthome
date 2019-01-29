@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <v-layout>
     <div class="loading" v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="loading === false" class="content">
@@ -17,7 +17,7 @@
         </li>
       </ul>
     </div>
-  </div>
+  </v-layout>
 </template>
 
 <script>

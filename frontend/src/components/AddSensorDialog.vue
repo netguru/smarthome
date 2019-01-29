@@ -3,17 +3,17 @@
     <v-btn outline flat icon slot="activator">
       <v-icon>add</v-icon>
     </v-btn>
-    <SensorEditCard 
+    <SensorEditCard
       title="Add sensor"
-      @saveClicked='saveClicked'
       @cancelClicked='isOpened= false'
       :sensor='{}'
+      @refresh='refresh'
+      createNew
       />
   </v-dialog>
 </template>
 
 <script>
-import axios from 'axios';
 import SensorEditCard from '@/components/SensorEditCard.vue';
 
 export default {
@@ -24,30 +24,13 @@ export default {
   data() {
     return {
       isOpened: false,
-      items: ['BOOLEAN', 'INT', 'FLOAT', 'STRING'],
     };
   },
   methods: {
-    saveClicked(item) {
-      console.log(item);
-      axios
-        .put(
-          `${this.$store.state.host}/add_sensor`,
-          JSON.stringify(item),
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
-        )
-        .then((response) => {
-          console.log(response);
-          if (response.status === 201) {
-            this.isOpened = false;
-            this.$emit('refresh');
-          }
-        });
-    },
-  },
+    refresh(){
+      this.isOpened = false;
+      this.$emit('refresh');
+    }
+  }
 };
 </script>
