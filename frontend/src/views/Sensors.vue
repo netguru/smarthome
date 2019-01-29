@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <v-layout>
     <div class="loading" v-if="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <v-container fluid fill-height class="pink">
-        <v-layout row>
+
+        <v-layout row fill-height>
           <v-flex xs12 md4 v-if="content!==null">
             <v-card>
               <v-card-title class="dark" @click="deselect()">
@@ -21,8 +21,7 @@
               </v-list>
             </v-card>
           </v-flex>
-          <v-divider vertical/>
-          <v-flex md8 grow class="hidden-sm-and-down">
+          <v-flex md8 grow class="hidden-sm-and-down ml-3">
             <SensorEditCard
               v-if="editSensor"
               title="Edit Sensor"
@@ -37,8 +36,7 @@
             >click + to add sensor or select sensor to edit</v-card>
           </v-flex>
         </v-layout>
-    </v-container>
-  </div>
+  </v-layout>
 </template>
 
 <script >
@@ -47,7 +45,7 @@ import AddSensorDialog from "@/components/AddSensorDialog.vue";
 import SensorEditCard from "@/components/SensorEditCard.vue";
 
 export default {
-  name: "Settings",
+  name: "Sensors",
   components: {
     AddSensorDialog,
     SensorEditCard
@@ -93,4 +91,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.content {
+ min-height: 100vh;
+ align-items: flex-start;
+}
 </style>
