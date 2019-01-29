@@ -1,7 +1,7 @@
 <template>
-    <v-card>
+    <v-card height="100%" class="flexcard">
       <v-card-title class="grey" primary-title>{{title}}</v-card-title>
-      <v-card-text>
+      <v-card-text class="grow">
         <v-form >
           <v-container fluid>
             <v-layout wrap row>
@@ -52,4 +52,11 @@ export default {
     },
 }
 </script>
+<style lang="scss" scoped>
+.flexcard {
+  display: flex;
+  flex-direction: column;
+}
+</style>
+
 
