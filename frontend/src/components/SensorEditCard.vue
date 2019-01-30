@@ -51,6 +51,7 @@ export default {
     return {
       items: ['BOOLEAN', 'INT', 'FLOAT', 'STRING'],
       mSensor: clonedeep(this.sensor),
+      inProgress: false,
     };
   },
   methods: {

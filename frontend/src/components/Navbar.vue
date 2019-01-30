@@ -28,8 +28,8 @@ export default {
       links: [
         { icon: 'dashboard', text: 'Dashboard', route: '/' },
         { icon: 'settings', text: 'Sensors', route: '/sensors' },
-        { icon: 'group_work', text: 'Groups', route: '/' },
-        { icon: 'description', text: 'Rules', route: '/' },
+        { icon: 'group_work', text: 'Groups', route: '/groups' },
+        { icon: 'description', text: 'Rules', route: '/rules' },
       ],
     };
   },
