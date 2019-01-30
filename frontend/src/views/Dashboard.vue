@@ -1,23 +1,20 @@
 <template>
-  <v-layout>
-    <div class="loading" v-if="loading">Loading...</div>
-    <div v-if="error" class="error">{{ error }}</div>
-    <div v-if="loading === false" class="content">
-      <ul>
-        <p>Sensors:</p>
-        <li v-for="(sensor, index) in sensors" v-bind:key="sensor.id">
-          <p>#{{sensor.id}} / {{sensor.name}}</p>
-          <ul>
-            <p>Events:</p>
-            <li v-for="event in events[index]" v-bind:key="event.id">
-              {{event.id}},
-                 {{event.timeStamp}}, {{event.data}}
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </v-layout>
+  <v-container fluid grid-list-sm fill-height>
+    <v-layout class="loading" v-if="loading">Loading...</v-layout>
+    <v-layout v-if="error" class="error">{{ error }}</v-layout>
+    <v-layout v-if="loading === false" class="content">
+      <v-layout row wrap>
+        <v-flex v-for="(sensor, index) in sensors" v-bind:key="sensor.id">
+          <v-card>
+            <v-card-title>#{{sensor.id}} / {{sensor.name}}</v-card-title>
+            <v-card-text>
+              Current status: {{getStatusForSensor(index)}}
+            </v-card-text>
+          </v-card>
+        </v-flex>
+      </v-layout>
+    </v-layout>
+  </v-container>
 </template>
 
 <script>
@@ -43,7 +40,6 @@ export default {
   },
   methods: {
     fetchData() {
-      console.log('refresh');
       this.loading = true;
       axios
         .get(`${this.$store.state.host}/get_sensors_all`)
@@ -57,7 +53,7 @@ export default {
               axios.get(
                 `${this.$store.state.host}/get_events_for_sensor/${
                   sensor.id
-                }/10`,
+                }/1`,
               ),
             );
           }
@@ -65,6 +61,7 @@ export default {
             .then((responses) => {
               this.loading = false;
               this.events = responses.map(it => it.data);
+              console.log(this.events);
             })
             .catch((err) => {
               this.loading = false;
@@ -76,6 +73,15 @@ export default {
           this.error = err.toString();
         });
     },
+    getStatusForSensor(index){
+      let status = this.events[index][0]
+      if(status){
+        console.log(status)
+        return status.data
+      } else {
+        return "No data"
+      }
+    }
   },
 };
 </script>
