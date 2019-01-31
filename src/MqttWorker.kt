@@ -32,10 +32,16 @@ class MqttWorker(
                             logger.debug { "subscribing to sensor at topic ${command.sensor.topic}" }
                             for (message in mqttClient.subscribe(command.sensor.topic)) {
                                 logger.debug { "message in ${command.sensor.topic} = $message" }
-                                db.saveEvent(
-                                    command.sensor.id,
-                                    transform(message, command.sensor.transform, command.sensor.returnType)
-                                )
+                                val transforms = db.getTransforms(command.sensor.id)
+                                transforms.forEach {
+                                    db.saveEvent(
+                                        command.sensor.id,
+                                        transform(message, it.transform, it.returnType),
+                                        it.id,
+                                        it.name ?: ""
+                                    )
+                                }
+
                                 //TODO: add posting event to refresh using websocket
                             }
                             logger.debug { "closing coroutine for ${command.sensor.id} topic: ${command.sensor.topic}" }

@@ -1,5 +1,20 @@
 package com.netguru
 
-data class AddSensorReq(val name: String, val topic: String, val transform: String, val returnType: String) {
-    fun toValuesArray(): List<String> = listOf(name, topic, transform, returnType)
+data class AddSensorReq(
+    val name: String,
+    val topic: String,
+    val transforms: List<TransformReq>)
+
+data class TransformReq(
+    val id: Int?, //id might be there if REMOVE or UPDATE ,
+    val name: String?,
+    val transform: String,
+    val returnType: TransformReturnType,
+    val action: TransformAction
+) {
+    fun toTransform(id: Int, sensorId: Int) = Transform(id, sensorId, name, transform, returnType)
+}
+
+enum class TransformAction {
+    ADD, REMOVE, UPDATE
 }

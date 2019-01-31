@@ -90,6 +90,8 @@ export default {
         .then(response => {
           this.loading = false;
           this.content = response.data;
+          console.log('content:')
+          console.log(this.content)
         })
         .catch(err => {
           this.loading = false;
@@ -98,12 +100,14 @@ export default {
     },
     onSelect(item) {
       this.editSensor = item;
+      console.log('edit:')
+      console.log(this.editSensor)
       if (window.innerWidth <= 960) {
-        console.log("dupa");
         this.editSensorDialogShow = true;
       }
     },
     deselect() {
+      this.addSensor = false;
       this.editSensor = null;
       this.editSensorDialogShow = false;
     }

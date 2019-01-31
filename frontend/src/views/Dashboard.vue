@@ -4,7 +4,7 @@
     <v-layout v-if="error" class="error">{{ error }}</v-layout>
     <v-layout v-if="loading === false" class="content">
       <v-layout row wrap>
-        <v-flex v-for="(sensor, index) in sensors" v-bind:key="sensor.id">
+        <v-flex md4 v-for="(sensor, index) in sensors" v-bind:key="sensor.id">
           <v-card>
             <v-card-title>#{{sensor.id}} / {{sensor.name}}</v-card-title>
             <v-card-text>
