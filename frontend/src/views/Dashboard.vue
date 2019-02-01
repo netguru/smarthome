@@ -18,17 +18,17 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
-  name: 'Dashboard',
+  name: "Dashboard",
   data() {
     return {
       sensors: null,
       events: null,
       error: null,
       loading: false,
-      timer: '',
+      timer: "",
     };
   },
   created() {
@@ -73,15 +73,14 @@ export default {
           this.error = err.toString();
         });
     },
-    getStatusForSensor(index){
-      let status = this.events[index][0]
-      if(status){
-        console.log(status)
-        return status.data
-      } else {
-        return "No data"
+    getStatusForSensor(index) {
+      const status = this.events[index][0];
+      if (status) {
+        console.log(status);
+        return status.data;
       }
-    }
+      return "No data";
+    },
   },
 };
 </script>

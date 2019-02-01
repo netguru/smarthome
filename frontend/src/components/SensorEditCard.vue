@@ -3,7 +3,7 @@
       <v-card-title class="dark" primary-title>{{title}}</v-card-title>
       <v-card-text class="grow">
         <v-form >
-          <v-container fluid grid-list-sm> 
+          <v-container fluid grid-list-sm>
             <v-layout column>
 
               <v-layout row >
@@ -14,7 +14,7 @@
                 <v-text-field v-model="mSensor.topic" label="Mqtt topic" />
               </v-flex>
             </v-layout>
-              
+
               <v-layout row class="dark">
               <v-flex >
                 Transforms:
@@ -24,14 +24,15 @@
                 <v-icon>add</v-icon>
               </v-btn>
               </v-layout>
-              
-              <Transform 
-              v-for="(transform, index) in mSensor.transforms" 
-              :key="transform.id" 
-              v-model="mSensor.transforms[index]" 
+
+              <Transform
+              v-for="(transform, index) in mSensor.transforms"
+              :key="transform.id"
+              v-model="mSensor.transforms[index]"
               @removeClicked="removeTransformClicked(index)"
+              @cancelRemoveClicked="cancelTransformRemove(index)"
               />
-               
+
             </v-layout>
           </v-container>
         </v-form>
@@ -45,14 +46,14 @@
     </v-card>
 </template>
 <script>
-import clonedeep from 'lodash.clonedeep';
-import axios from 'axios';
-import Transform from '@/components/TransformEdit.vue'
+import clonedeep from "lodash.clonedeep";
+import axios from "axios";
+import Transform from "@/components/TransformEdit.vue";
 
 export default {
-  name: 'SensorEdit',
+  name: "SensorEdit",
   components: {
-    Transform
+    Transform,
   },
   props: {
     title: String,
@@ -74,7 +75,7 @@ export default {
   },
   methods: {
     saveClicked() {
-      if(this.createNew){
+      if (this.createNew) {
         this.create();
       } else {
         this.edit();
@@ -87,13 +88,13 @@ export default {
           JSON.stringify(this.mSensor),
           {
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
           },
         )
         .then((response) => {
           if (response.status === 201) {
-            this.$emit('refresh');
+            this.$emit("refresh");
           }
         });
     },
@@ -104,29 +105,40 @@ export default {
           JSON.stringify(this.mSensor),
           {
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
           },
         )
         .then((response) => {
           if (response.status === 200) {
-            this.$emit('refresh');
+            this.$emit("refresh");
           }
         });
     },
-    removeTransformClicked(index){
-
+    removeTransformClicked(index) {
+        if(this.mSensor.transforms[index].id){
+          this.$set(this.mSensor.transforms[index], 'action', "REMOVE");
+        } else {
+          this.mSensor.transforms.splice(index,1);
+        }
+    },
+    cancelTransformRemove(index) {
+      // his.$set(this.mSensor.transforms[index], 'action', "");
+      this.mSensor.transforms[index].action = "";
     },
     addTransform() {
-      this.mSensor.transforms.push({action: "ADD"});
+      if(!this.mSensor.transforms){
+        this.$set(this.mSensor, 'transforms', []);
+      }
+      this.mSensor.transforms.push({ action: "ADD" });
     },
     removeClicked() {
-      console.log("delete clicked")
+      console.log("delete clicked");
       axios
         .delete(`${this.$store.state.host}/remove_sensor/${this.mSensor.id}`)
         .then((response) => {
           if (response.status === 200) {
-            this.$emit('refresh');
+            this.$emit("refresh");
           }
         });
     },

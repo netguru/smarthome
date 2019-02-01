@@ -26,10 +26,10 @@ export default {
     return {
       drawer: false,
       links: [
-        { icon: 'dashboard', text: 'Dashboard', route: '/' },
-        { icon: 'settings', text: 'Sensors', route: '/sensors' },
-        { icon: 'group_work', text: 'Groups', route: '/groups' },
-        { icon: 'description', text: 'Rules', route: '/rules' },
+        { icon: "dashboard", text: "Dashboard", route: "/" },
+        { icon: "settings", text: "Sensors", route: "/sensors" },
+        { icon: "group_work", text: "Groups", route: "/groups" },
+        { icon: "description", text: "Rules", route: "/rules" },
       ],
     };
   },

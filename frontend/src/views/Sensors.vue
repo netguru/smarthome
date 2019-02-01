@@ -62,7 +62,7 @@ import SensorEditCard from "@/components/SensorEditCard.vue";
 export default {
   name: "Sensors",
   components: {
-    SensorEditCard
+    SensorEditCard,
   },
   data() {
     return {
@@ -71,14 +71,14 @@ export default {
       loading: false,
       content: null,
       error: null,
-      editSensorDialogShow: false
+      editSensorDialogShow: false,
     };
   },
   created() {
     this.fetchData();
   },
   watch: {
-    $route: "fetchData"
+    $route: "fetchData",
   },
   methods: {
     fetchData() {
@@ -87,21 +87,17 @@ export default {
       this.loading = true;
       axios
         .get(`${this.$store.state.host}//get_sensors_all`)
-        .then(response => {
+        .then((response) => {
           this.loading = false;
           this.content = response.data;
-          console.log('content:')
-          console.log(this.content)
         })
-        .catch(err => {
+        .catch((err) => {
           this.loading = false;
           this.error = err.toString();
         });
     },
     onSelect(item) {
       this.editSensor = item;
-      console.log('edit:')
-      console.log(this.editSensor)
       if (window.innerWidth <= 960) {
         this.editSensorDialogShow = true;
       }
@@ -110,8 +106,8 @@ export default {
       this.addSensor = false;
       this.editSensor = null;
       this.editSensorDialogShow = false;
-    }
-  }
+    },
+  },
 };
 </script>
 
