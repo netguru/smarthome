@@ -27,9 +27,10 @@ export default {
       drawer: false,
       links: [
         { icon: "dashboard", text: "Dashboard", route: "/" },
-        { icon: "settings", text: "Sensors", route: "/sensors" },
+        { icon: "wifi_tethering", text: "Sensors", route: "/sensors" },
         { icon: "group_work", text: "Groups", route: "/groups" },
         { icon: "description", text: "Rules", route: "/rules" },
+        { icon: "settings", text: "Settings", route: "/settings" },
       ],
     };
   },
