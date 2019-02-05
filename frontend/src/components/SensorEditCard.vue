@@ -1,77 +1,83 @@
 <template>
-    <v-card height="100%" class="flexcard">
-      <v-card-title class="dark" primary-title>{{title}}</v-card-title>
-      <v-card-text class="grow">
-        <v-form >
-          <v-container fluid grid-list-sm>
-            <v-layout column>
-
-              <v-layout row >
+  <v-card height="100%" class="flexcard">
+    <v-card-title class="dark" primary-title>{{title}}</v-card-title>
+    <v-card-text class="grow">
+      <v-form>
+        <v-container fluid grid-list-sm>
+          <v-layout column>
+            <v-layout row>
               <v-flex xs12 md6>
-                <v-text-field v-model="mSensor.name" label="Sensor name" />
+                <v-text-field v-model="mSensor.name" label="Sensor name"/>
               </v-flex>
               <v-flex xs12 md6>
-                <v-text-field v-model="mSensor.topic" label="Mqtt topic" />
+                <v-text-field v-model="mSensor.topic" label="Mqtt topic"/>
               </v-flex>
             </v-layout>
 
-              <v-layout row class="dark">
-              <v-flex >
-                Transforms:
-              </v-flex>
+            <v-layout row class="dark">
+              <v-flex>Transforms:</v-flex>
               <v-spacer></v-spacer>
               <v-btn outline flat icon @click="addTransform()">
                 <v-icon>add</v-icon>
               </v-btn>
-              </v-layout>
+            </v-layout>
 
-              <Transform
+            <Transform
               v-for="(transform, index) in mSensor.transforms"
               :key="transform.id"
-              v-model="mSensor.transforms[index]"
+              :transform="mSensor.transforms[index]"
               @removeClicked="removeTransformClicked(index)"
-              @cancelRemoveClicked="cancelTransformRemove(index)"
-              />
+              @cancelUpdateClicked="cancelUpdateClicked(index)"
+              @update="updateTransform(index,$event)"
+            />
+          </v-layout>
+        </v-container>
+      </v-form>
+    </v-card-text>
 
-            </v-layout>
-          </v-container>
-        </v-form>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-btn color="primary" @click="saveClicked">Save</v-btn>
-        <v-btn color="primary" @click="$emit('cancelClicked')" class="hidden-sm-and-up">Cancel</v-btn>
-        <v-btn color="red"  dark @click="removeClicked" v-if="deleteButton">Delete sensor</v-btn>
-      </v-card-actions>
-    </v-card>
+    <v-card-actions>
+      <v-btn color="primary" @click="saveClicked">Save</v-btn>
+      <v-btn color="primary" @click="$emit('cancelClicked')" class="hidden-sm-and-up">Cancel</v-btn>
+      <v-btn color="red" dark @click="removeClicked" v-if="deleteButton">Delete sensor</v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 <script>
 import clonedeep from "lodash.clonedeep";
 import axios from "axios";
 import Transform from "@/components/TransformEdit.vue";
+import Vue from "vue";
 
 export default {
   name: "SensorEdit",
   components: {
-    Transform,
+    Transform
   },
   props: {
     title: String,
     deleteButton: Boolean,
     sensor: Object,
-    createNew: Boolean,
+    createNew: Boolean
   },
 
   watch: {
     sensor(value) {
       this.mSensor = clonedeep(value);
-    },
+      if (!this.mSensor.transforms) {
+        this.$set(this.mSensor, "transforms", []);
+      }
+    }
   },
   data() {
     return {
       mSensor: clonedeep(this.sensor),
-      inProgress: false,
+      inProgress: false
     };
+  },
+  mounted() {
+      if (!this.mSensor.transforms) {
+        this.$set(this.mSensor, "transforms", []);
+      }
   },
   methods: {
     saveClicked() {
@@ -88,61 +94,75 @@ export default {
           JSON.stringify(this.mSensor),
           {
             headers: {
-              "Content-Type": "application/json",
-            },
-          },
+              "Content-Type": "application/json"
+            }
+          }
         )
-        .then((response) => {
+        .then(response => {
           if (response.status === 201) {
             this.$emit("refresh");
           }
         });
     },
     edit() {
-      axios
-        .patch(
-          `${this.$store.state.host}/modify_sensor/${this.mSensor.id}`,
-          JSON.stringify(this.mSensor),
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        )
-        .then((response) => {
-          if (response.status === 200) {
-            this.$emit("refresh");
-          }
-        });
-    },
-    removeTransformClicked(index) {
-        if(this.mSensor.transforms[index].id){
-          this.$set(this.mSensor.transforms[index], 'action', "REMOVE");
-        } else {
-          this.mSensor.transforms.splice(index,1);
-        }
-    },
-    cancelTransformRemove(index) {
-      // his.$set(this.mSensor.transforms[index], 'action', "");
-      this.mSensor.transforms[index].action = "";
-    },
-    addTransform() {
-      if(!this.mSensor.transforms){
-        this.$set(this.mSensor, 'transforms', []);
-      }
-      this.mSensor.transforms.push({ action: "ADD" });
+        axios
+          .patch(
+            `${this.$store.state.host}/modify_sensor/${this.mSensor.id}`,
+            JSON.stringify(this.mSensor),
+            {
+              headers: {
+                "Content-Type": "application/json"
+              }
+            }
+          )
+          .then(response => {
+            if (response.status === 200) {
+              this.$emit("refresh");
+            }
+          });
     },
     removeClicked() {
       console.log("delete clicked");
       axios
         .delete(`${this.$store.state.host}/remove_sensor/${this.mSensor.id}`)
-        .then((response) => {
+        .then(response => {
           if (response.status === 200) {
             this.$emit("refresh");
           }
         });
     },
-  },
+    //transfoorm methods:
+    removeTransformClicked(index) {
+        if(this.mSensor.transforms[index].action =="ADD"){
+            this.mSensor.transforms.splice(index,1);
+        } else {
+            this.$set(this.mSensor.transforms[index],"action", "REMOVE");
+        }
+    },
+    cancelUpdateClicked(index) {
+        let transform = this.mSensor.transforms[index];
+        if(transform.action == "REMOVE"){
+            this.$set(transform,"action", "");
+        }else if(transform.action == "UPDATE"){
+            this.$set(transform,"action", "");
+        }
+        this.$set(transform, "name", this.sensor.transforms[index].name);
+        this.$set(transform, "transform", this.sensor.transforms[index].transform);
+        this.$set(transform, "returnType", this.sensor.transforms[index].returnType);
+    },
+    addTransform() {
+      this.mSensor.transforms.push({ action: "ADD" });
+    },
+    updateTransform(index, event) {
+      let transform = this.mSensor.transforms[index];
+      this.$set(this.mSensor.transforms[index], "name", event.name);
+      this.$set(this.mSensor.transforms[index], "transform", event.transform);
+      this.$set(this.mSensor.transforms[index], "returnType", event.returnType);
+      if(this.mSensor.transforms[index].action!="ADD"){
+        this.mSensor.transforms[index].action = "UPDATE"
+      }
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>
