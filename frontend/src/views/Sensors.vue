@@ -1,9 +1,9 @@
 <template>
   <v-layout>
-    <div class="loading" v-if="loading">Loading...</div>
-    <div v-if="error" class="error">{{ error }}</div>
+    <v-layout class="loading" v-if="loading">Loading...</v-layout>
+    <v-layout v-if="error" class="error">{{ error }}</v-layout>
 
-    <v-layout row fill-height>
+    <v-layout row fill-height v-if="!error">
       <v-flex xs12 md4 v-if="content!==null">
         <v-card>
           <v-card-title class="dark" @click="deselect()">

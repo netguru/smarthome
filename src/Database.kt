@@ -74,19 +74,23 @@ class Database(private val connection: Connection) {
         )
     }
 
-    private suspend fun addTransforms(sensorId: Int,transforms: List<TransformReq>): List<Int> {
-        val query = transforms.filter { it.action == TransformAction.ADD }
-            .joinToString(
-                separator = ",",
-                prefix = "INSERT INTO TRANSFORMS (transform, sensor_id, return_type, name) VALUES ",
-                postfix = " RETURNING id"
-            ) {
-                "( \'${it.transform}\', $sensorId, \'${it.returnType}\', \'${it.name}\')"
-            }
+    private suspend fun addTransforms(sensorId: Int, transforms: List<TransformReq>): List<Int> {
+        val addTransforms = transforms.filter { it.action == TransformAction.ADD }
+        if (addTransforms.isNotEmpty()) {
+            val query = addTransforms
+                .joinToString(
+                    separator = ",",
+                    prefix = "INSERT INTO TRANSFORMS (transform, sensor_id, return_type, name) VALUES ",
+                    postfix = " RETURNING id"
+                ) {
+                    "( \'${it.transform}\', $sensorId, \'${it.returnType}\', \'${it.name}\')"
+                }
 
-        val resultTransform = connection.sendPreparedStatementAwait(query)
-        return resultTransform.rows.map { it.getInt("id")!! }
+            val resultTransform = connection.sendPreparedStatementAwait(query)
+            return resultTransform.rows.map { it.getInt("id")!! }
+        }
 
+        return emptyList()
     }
 
     suspend fun getAllSensors(): List<Sensor> {
@@ -149,7 +153,7 @@ class Database(private val connection: Connection) {
 
     suspend fun modifySensor(id: Int, sensorData: AddSensorReq): Sensor = coroutineScope {
         connection.sendPreparedStatementAwait(
-            "UPDATE SENSORS SET (name, topic) = (${sensorData.name}, ${sensorData.topic}) WHERE id=$id"
+            "UPDATE SENSORS SET (name, topic) = (\'${sensorData.name}\', \'${sensorData.topic}\') WHERE id=$id"
         )
 
         addTransforms(id, sensorData.transforms)
@@ -165,20 +169,26 @@ class Database(private val connection: Connection) {
     }
 
     private suspend fun removeTransforms(transforms: List<TransformReq>) {
-        val ids = transforms
+        val toRemove = transforms
             .filter { it.action == TransformAction.REMOVE }
-            .map { it.id!! }
-            .joinToString(",", prefix = "(", postfix = ")") { it.toString() }
+        if (toRemove.isNotEmpty()) {
+            val ids = toRemove
+                .map { it.id!! }
+                .joinToString(",", prefix = "(", postfix = ")") { it.toString() }
 
-        connection.sendPreparedStatementAwait("DELETE FROM TRANSFORMS WHERE id IN $ids")
+            connection.sendPreparedStatementAwait("DELETE FROM TRANSFORMS WHERE id IN $ids")
+        }
     }
 
     private suspend fun modifyTransforms(transforms: List<TransformReq>) {
-        transforms.filter { it.action == TransformAction.UPDATE }.forEach {
-            connection.sendPreparedStatementAwait(
-                "UPDATE TRANSFORMS SET (transform, return_type, name) = (${it.transform}, ${it.returnType}, ${it.name}) WHERE id=${it.id}"
-            )
-        }
+        transforms.filter { it.action == TransformAction.UPDATE }
+            .forEach {
+                connection.sendPreparedStatementAwait(
+                    "UPDATE TRANSFORMS SET (transform, return_type, name)" +
+                            " = (?, ?, ?) WHERE id=${it.id}",
+                    listOf(it.transform, it.returnType.name , it.name?:"")
+                )
+            }
     }
 
 }

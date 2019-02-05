@@ -40,15 +40,16 @@
 </template>
 <script>
 import clonedeep from "lodash.clonedeep";
+
 export default {
   name: "Transform",
   props: {
-    transform: Object
+    transform: Object,
   },
   data() {
     return {
       modified: clonedeep(this.transform),
-      items: ["BOOLEAN", "INT", "FLOAT", "STRING"]
+      items: ["BOOLEAN", "INT", "FLOAT", "STRING"],
     };
   },
   methods: {
@@ -57,7 +58,6 @@ export default {
       this.$emit("update", this.modified);
     },
     updateSensorTransform(trans) {
-
       this.modified.transform = trans;
       this.$emit("update", this.modified);
     },
@@ -70,8 +70,8 @@ export default {
     },
     cancelUpdateClicked() {
       this.$emit("cancelUpdateClicked");
-    }
-  }
+    },
+  },
 };
 </script>
 
