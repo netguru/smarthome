@@ -1,24 +1,28 @@
 <template>
-  <v-container fluid grid-list-sm fill-height>
+  <v-layout>
     <v-layout v-if="loading">Loading...</v-layout>
     <v-layout v-if="error">{{ error }}</v-layout>
     <v-layout v-if="loading === false && error === null">
       <v-layout row wrap align-content-start>
-        <v-flex md4 v-for="sensor in sensors" v-bind:key="sensor.id">
+        <v-flex md3 v-for="sensor in sensors" v-bind:key="sensor.id">
           <v-card>
             <v-card-title class="dark">{{sensor.name}}</v-card-title>
             <v-card-text>
               <v-layout column>
-                  <v-flex v-for="transform in sensor.transforms" :key="transform.id">
-                     <TransformView :transform="transform" v-if="transform.event" :icon="typeof transform.icon  !== 'undefined'"/>
-                  </v-flex>
+                <v-flex v-for="transform in sensor.transforms" :key="transform.id">
+                  <TransformView
+                    :transform="transform"
+                    v-if="transform.event"
+                    :icon="typeof transform.icon  !== 'undefined'"
+                  />
+                </v-flex>
               </v-layout>
             </v-card-text>
           </v-card>
         </v-flex>
       </v-layout>
     </v-layout>
-  </v-container>
+  </v-layout>
 </template>
 
 <script>
@@ -33,7 +37,7 @@ export default {
       sensors: null,
       error: null,
       loading: false,
-      timer: "",
+      timer: ""
     };
   },
   created() {
@@ -48,23 +52,28 @@ export default {
       this.loading = true;
       axios
         .get(`${this.$store.state.host}/get_sensors_all`)
-        .then((response) => {
+        .then(response => {
           this.sensors = response.data;
           this.loading = false;
-          this.sensors.forEach((sensor) => {
-            sensor.transforms.forEach((transform) => {
-              axios.get(`${this.$store.state.host}/get_events_for_transform/${transform.id}/1`)
-                .then((responseTrans) => {
+          this.sensors.forEach(sensor => {
+            sensor.transforms.forEach(transform => {
+              axios
+                .get(
+                  `${this.$store.state.host}/get_events_for_transform/${
+                    transform.id
+                  }/1`
+                )
+                .then(responseTrans => {
                   this.$set(transform, "event", responseTrans.data[0]);
                 });
             });
           });
         })
-        .catch((err) => {
+        .catch(err => {
           this.loading = false;
           this.error = err.toString();
         });
-    },
-  },
+    }
+  }
 };
 </script>

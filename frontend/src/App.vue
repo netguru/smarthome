@@ -3,7 +3,7 @@
     <Navbar/>
 
     <v-content>
-      <v-container fluid fill-height>
+      <v-container fluid fill-height grid-list-sm>
         <router-view></router-view>
       </v-container>
     </v-content>

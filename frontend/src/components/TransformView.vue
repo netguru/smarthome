@@ -2,7 +2,7 @@
   <v-layout row >
     <v-flex grow>{{transform.name}}:</v-flex>
     <v-layout
-      md4
+      md3
       v-if="transform.returnType=='BOOLEAN'"
       class="text-xs-right"
         shrink
@@ -31,7 +31,6 @@ export default {
   },
   computed: {
       booleanPath() {
-          //return this.transform.event.data;
           return require(`@/assets/icons/booleanIcons/${this.transform.icon}-${this.transform.event.data}.png`)
       },
       intPath() {

@@ -28,6 +28,9 @@
         :disabled="transform.action=='REMOVE'"
       ></v-select>
     </v-flex>
+    <v-flex md1 >
+        icon
+    </v-flex>
     <v-flex md2>
       <v-btn flat icon v-if="transform.action!='REMOVE'">
         <v-icon color="red" @click="removeClicked">remove_circle</v-icon>
