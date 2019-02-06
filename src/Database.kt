@@ -127,10 +127,10 @@ class Database(private val connection: Connection) {
         )
     }
 
-    suspend fun getEvents(id: Int, limit: Int): List<Event> {
+    suspend fun getEventsForTransform(transformId: Int, limit: Int): List<Event> {
         val result = connection.sendPreparedStatementAwait(
-            "SELECT * FROM EVENTS WHERE sensor_id=? ORDER BY timestamp DESC LIMIT ?",
-            listOf(id, limit)
+            "SELECT * FROM EVENTS WHERE transform_id=? ORDER BY timestamp DESC LIMIT ?",
+            listOf(transformId, limit)
         )
         return result.rows.map {
             Event(

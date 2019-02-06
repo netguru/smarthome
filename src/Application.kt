@@ -113,10 +113,10 @@ fun Application.module(testing: Boolean = false) {
         }
 
 
-        get("/get_events_for_sensor/{id}/{limit}"){
+        get("/get_events_for_transform/{id}/{limit}"){
             val id = call.parameters["id"]?.toInt()
             val limit = call.parameters["limit"]?.toInt()
-            call.respond(db.getEvents(id?:0, limit?:10))
+            call.respond(db.getEventsForTransform(id?:0, limit?:10))
         }
 
     }

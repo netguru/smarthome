@@ -1,14 +1,24 @@
 <template>
   <v-container fluid grid-list-sm fill-height>
-    <v-layout class="loading" v-if="loading">Loading...</v-layout>
-    <v-layout v-if="error" class="error">{{ error }}</v-layout>
-    <v-layout v-if="loading === false" class="content">
+    <v-layout v-if="loading">Loading...</v-layout>
+    <v-layout v-if="error">{{ error }}</v-layout>
+    <v-layout v-if="loading === false && error === null">
       <v-layout row wrap>
-        <v-flex md4 v-for="(sensor, index) in sensors" v-bind:key="sensor.id">
+        <v-flex md2 v-for="sensor in sensors" v-bind:key="sensor.id">
           <v-card>
-            <v-card-title>#{{sensor.id}} / {{sensor.name}}</v-card-title>
+            <v-card-title class="dark">{{sensor.name}}</v-card-title>
             <v-card-text>
-              Current status: {{getStatusForSensor(index)}}
+              <v-layout column>
+                  <v-flex v-for="transform in sensor.transforms" :key="transform.id">
+                     <v-layout row >
+                        <v-flex>{{transform.name}}:</v-flex>
+                     <v-spacer></v-spacer>
+                      <v-flex v-if="transform.event">
+                        {{transform.event.data}}
+                      </v-flex>
+                     </v-layout>
+                  </v-flex>
+              </v-layout>
             </v-card-text>
           </v-card>
         </v-flex>
@@ -25,14 +35,13 @@ export default {
   data() {
     return {
       sensors: null,
-      events: null,
       error: null,
       loading: false,
       timer: "",
     };
   },
   created() {
-    this.timer = setInterval(this.fetchData, 1000 * 15);
+    this.timer = setInterval(this.fetchData, 1000 * 30);
     this.fetchData();
   },
   destroyed() {
@@ -44,45 +53,22 @@ export default {
       axios
         .get(`${this.$store.state.host}/get_sensors_all`)
         .then((response) => {
-          let index;
-          const promises = [];
           this.sensors = response.data;
-          for (index = 0; index < response.data.length; index += 1) {
-            const sensor = response.data[index];
-            promises.push(
-              axios.get(
-                `${this.$store.state.host}/get_events_for_sensor/${
-                  sensor.id
-                }/1`,
-              ),
-            );
-          }
-          Promise.all(promises)
-            .then((responses) => {
-              this.loading = false;
-              this.events = responses.map(it => it.data);
-              console.log(this.events);
-            })
-            .catch((err) => {
-              this.loading = false;
-              this.error = err.toString();
-            });
+          this.loading = false;
+          this.sensors.forEach(sensor => {
+              sensor.transforms.forEach(transform =>{
+                  axios.get(`${this.$store.state.host}/get_events_for_transform/${transform.id}/1`)
+                  .then(response => {
+                      this.$set(transform, "event", response.data[0])
+                  })
+              })
+          });
         })
         .catch((err) => {
           this.loading = false;
           this.error = err.toString();
         });
     },
-    getStatusForSensor(index) {
-      const status = this.events[index][0];
-      if (status) {
-        console.log(status);
-        return status.data;
-      }
-      return "No data";
-    },
   },
 };
 </script>
-<style lang="scss" scoped>
-</style>
