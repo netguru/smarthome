@@ -187,9 +187,9 @@ class Database(private val connection: Connection) {
         transforms.filter { it.action == TransformAction.UPDATE }
             .forEach {
                 connection.sendPreparedStatementAwait(
-                    "UPDATE TRANSFORMS SET (transform, return_type, name)" +
-                            " = (?, ?, ?) WHERE id=${it.id}",
-                    listOf(it.transform, it.returnType.name , it.name?:"")
+                    "UPDATE TRANSFORMS SET (transform, return_type, name, icon)" +
+                            " = (?, ?, ?, ?) WHERE id=${it.id}",
+                    listOf(it.transform, it.returnType.name , it.name?:"", it.icon?:"")
                 )
             }
     }

@@ -1,5 +1,5 @@
 <template>
-  <v-layout row  class="margins" v-bind:class="transform.action" >
+  <v-layout row class="margins" v-bind:class="transform.action">
     <v-flex xs12 md4>
       <v-text-field
         ref="name"
@@ -28,17 +28,43 @@
         :disabled="transform.action=='REMOVE'"
       ></v-select>
     </v-flex>
-    <v-flex md1 >
-        icon
+    <v-flex md1>
+      <v-img :src="getIcon()" v-if="transform.icon" @click="chooseIcon = !chooseIcon"/>
+      <v-btn flat fab v-if="!transform.icon" @click="chooseIcon = !chooseIcon">
+        <v-icon>web_asset</v-icon>
+      </v-btn>
     </v-flex>
     <v-flex md2>
       <v-btn flat icon v-if="transform.action!='REMOVE'">
-        <v-icon color="red" @click="removeClicked">remove_circle</v-icon>
+        <v-icon color="red" @click="removeClicked">delete</v-icon>
       </v-btn>
-      <v-btn flat icon v-if="transform.action=='REMOVE' || transform.action=='UPDATE'">
+      <v-btn icon v-if="transform.action=='REMOVE' || transform.action=='UPDATE'">
         <v-icon @click="cancelUpdateClicked">close</v-icon>
       </v-btn>
     </v-flex>
+    <v-dialog v-model="chooseIcon">
+      <v-card>
+          <v-card-title>Choose icon</v-card-title>
+          <v-card-text>
+            <v-layout row wrap v-if="transform.returnType==='BOOLEAN'">
+                <v-img contain width="40" height="40" v-for="icon in booleanIcons" :key="icon"
+                :src="getBooleanIcon(icon)"
+                @click="selectIcon(icon)"
+                />
+            </v-layout>
+
+            <v-layout row wrap v-else-if="transform.returnType==='INT'">
+                <v-img contain width="40" height="40" v-for="icon in intIcons" :key="icon"
+                :src="getIntIcon(icon)"
+                @click="selectIcon(icon)"
+                />
+            </v-layout>
+            <v-layout v-else>
+                Choose Boolean or Int Return Type first.
+            </v-layout>
+          </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-layout>
 </template>
 <script>
@@ -47,12 +73,47 @@ import clonedeep from "lodash.clonedeep";
 export default {
   name: "Transform",
   props: {
-    transform: Object,
+    transform: Object
   },
   data() {
     return {
       modified: clonedeep(this.transform),
       items: ["BOOLEAN", "INT", "FLOAT", "STRING"],
+      chooseIcon: false,
+      booleanIcons: [
+        "contact",
+        "door",
+        "fire",
+        "frontdoor",
+        "garagedoor",
+        "heating",
+        "light",
+        "lock",
+        "network",
+        "poweroutlet",
+        "presence",
+        "receiver",
+        "screen",
+        "siren",
+        "switch",
+        "wallswitch",
+        "washingmachine",
+        "window"
+        ],
+
+    intIcons: [
+        "battery",
+        "blinds",
+        "cinemascreen",
+        "cistern",
+        "garagedoor",
+        "heating",
+        "humidity",
+        "light",
+        "qualityofservice",
+        "rollershutter",
+        "sewerage"
+        ]
     };
   },
   methods: {
@@ -74,7 +135,28 @@ export default {
     cancelUpdateClicked() {
       this.$emit("cancelUpdateClicked");
     },
-  },
+    getBooleanIcon(name){
+        return require(`@/assets/icons/booleanIcons/${name}-true.png`);
+    },
+    getIntIcon(name){
+        return require(`@/assets/icons/intIcons/${name}-70.png`);
+    },
+    getIcon() {
+      switch (this.transform.returnType) {
+        case "BOOLEAN":
+          return this.getBooleanIcon(this.transform.icon);
+          break;
+        case "INT":
+          return this.getIntIcon(this.transform.icon);
+          break;
+      }
+    },
+    selectIcon(icon) {
+      this.modified.icon = icon;
+      this.$emit("update", this.modified);
+      this.chooseIcon = false;
+    }
+  }
 };
 </script>
 
@@ -89,6 +171,6 @@ export default {
   background: rgba(255, 166, 0, 0.2);
 }
 .margins {
-    margin: 2px 0px 2px 0px
+  margin: 2px 0px 2px 0px;
 }
 </style>

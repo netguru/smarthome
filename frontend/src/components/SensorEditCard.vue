@@ -171,6 +171,11 @@ export default {
         "returnType",
         this.sensor.transforms[index].returnType,
       );
+      this.$set(
+        transform,
+        "icon",
+        this.sensor.transforms[index].icon,
+      );
     },
     addTransform() {
       this.mSensor.transforms.push({ action: "ADD" });
@@ -179,6 +184,7 @@ export default {
       this.$set(this.mSensor.transforms[index], "name", event.name);
       this.$set(this.mSensor.transforms[index], "transform", event.transform);
       this.$set(this.mSensor.transforms[index], "returnType", event.returnType);
+      this.$set(this.mSensor.transforms[index], "icon", event.icon);
       if (this.mSensor.transforms[index].action !== "ADD") {
         this.mSensor.transforms[index].action = "UPDATE";
       }

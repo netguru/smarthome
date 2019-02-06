@@ -31,11 +31,11 @@ export default {
   },
   computed: {
       booleanPath() {
-          return require(`@/assets/icons/booleanIcons/${this.transform.icon}-${this.transform.event.data}.png`)
+          return require(`@/assets/icons/booleanIcons/${this.transform.icon}-${this.transform.event.data}.png`);
       },
       intPath() {
           let value = Math.floor(this.transform.event.data / 10) * 10;
-          return require(`@/assets/icons/intIcons/${this.transform.icon}-${value}.png`)
+          return require(`@/assets/icons/intIcons/${this.transform.icon}-${value}.png`);
       }
   },
 };
