@@ -55,13 +55,13 @@ export default {
         .then((response) => {
           this.sensors = response.data;
           this.loading = false;
-          this.sensors.forEach(sensor => {
-              sensor.transforms.forEach(transform =>{
-                  axios.get(`${this.$store.state.host}/get_events_for_transform/${transform.id}/1`)
-                  .then(response => {
-                      this.$set(transform, "event", response.data[0])
-                  })
-              })
+          this.sensors.forEach((sensor) => {
+            sensor.transforms.forEach((transform) => {
+              axios.get(`${this.$store.state.host}/get_events_for_transform/${transform.id}/1`)
+                .then((responseTrans) => {
+                  this.$set(transform, "event", responseTrans.data[0]);
+                });
+            });
           });
         })
         .catch((err) => {
