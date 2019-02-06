@@ -3,20 +3,14 @@
     <v-layout v-if="loading">Loading...</v-layout>
     <v-layout v-if="error">{{ error }}</v-layout>
     <v-layout v-if="loading === false && error === null">
-      <v-layout row wrap>
-        <v-flex md2 v-for="sensor in sensors" v-bind:key="sensor.id">
+      <v-layout row wrap align-content-start>
+        <v-flex md4 v-for="sensor in sensors" v-bind:key="sensor.id">
           <v-card>
             <v-card-title class="dark">{{sensor.name}}</v-card-title>
             <v-card-text>
               <v-layout column>
                   <v-flex v-for="transform in sensor.transforms" :key="transform.id">
-                     <v-layout row >
-                        <v-flex>{{transform.name}}:</v-flex>
-                     <v-spacer></v-spacer>
-                      <v-flex v-if="transform.event">
-                        {{transform.event.data}}
-                      </v-flex>
-                     </v-layout>
+                     <TransformView :transform="transform" v-if="transform.event" :icon="typeof transform.icon  !== 'undefined'"/>
                   </v-flex>
               </v-layout>
             </v-card-text>
@@ -29,9 +23,11 @@
 
 <script>
 import axios from "axios";
+import TransformView from "@/components/TransformView.vue";
 
 export default {
   name: "Dashboard",
+  components: { TransformView },
   data() {
     return {
       sensors: null,

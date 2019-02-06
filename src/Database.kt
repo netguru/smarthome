@@ -28,7 +28,8 @@ data class Transform(
     val sensorId: Int,
     val name: String?,
     val transform: String,
-    val returnType: TransformReturnType
+    val returnType: TransformReturnType,
+    val icon: String?
 )
 
 data class Event(
@@ -68,7 +69,8 @@ class Database(private val connection: Connection) {
                     sensorId,
                     transformReq.name,
                     transformReq.transform,
-                    transformReq.returnType
+                    transformReq.returnType,
+                    transformReq.icon
                 )
             }
         )
@@ -80,10 +82,10 @@ class Database(private val connection: Connection) {
             val query = addTransforms
                 .joinToString(
                     separator = ",",
-                    prefix = "INSERT INTO TRANSFORMS (transform, sensor_id, return_type, name) VALUES ",
+                    prefix = "INSERT INTO TRANSFORMS (transform, sensor_id, return_type, name, icon) VALUES ",
                     postfix = " RETURNING id"
                 ) {
-                    "( \'${it.transform}\', $sensorId, \'${it.returnType}\', \'${it.name}\')"
+                    "( \'${it.transform}\', $sensorId, \'${it.returnType}\', \'${it.name}\', ${if(it.icon!=null){ "\'${it.icon}\'"} else {"NULL"}  })"
                 }
 
             val resultTransform = connection.sendPreparedStatementAwait(query)
@@ -103,14 +105,15 @@ class Database(private val connection: Connection) {
     }
 
     suspend fun getTransforms(sensorId: Int): List<Transform> {
-        val result = connection.sendPreparedStatementAwait("SELECT * FROM TRANSFORMS WHERE sensor_id = $sensorId")
+        val result = connection.sendPreparedStatementAwait("SELECT * FROM TRANSFORMS WHERE sensor_id = $sensorId ORDER BY id")
         return result.rows.map {
             Transform(
                 it.getInt("id")!!,
                 it.getInt("sensor_id")!!,
                 it.getString("name"),
                 it.getString("transform")!!,
-                TransformReturnType.of(it.getString("return_type")!!)
+                TransformReturnType.of(it.getString("return_type")!!),
+                it.getString("icon")
             )
         }
     }

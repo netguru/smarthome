@@ -10,9 +10,10 @@ data class TransformReq(
     val name: String?,
     val transform: String,
     val returnType: TransformReturnType,
-    val action: TransformAction
+    val action: TransformAction,
+    val icon: String?
 ) {
-    fun toTransform(id: Int, sensorId: Int) = Transform(id, sensorId, name, transform, returnType)
+    fun toTransform(id: Int, sensorId: Int) = Transform(id, sensorId, name, transform, returnType, icon)
 }
 
 enum class TransformAction {
