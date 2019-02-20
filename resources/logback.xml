@@ -10,5 +10,6 @@
     <logger name="org.eclipse.jetty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="com.github.jasync.sql.db" level="DEBUG" />
+    <logger name="com.zaxxer.hikari" level="INFO" />
 
 </configuration>

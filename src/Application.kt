@@ -1,33 +1,40 @@
 package com.netguru
 
-import com.github.jasync.sql.db.Configuration
-import com.github.jasync.sql.db.Connection
-import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
-import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
-import com.jayway.jsonpath.JsonPath
-import io.ktor.application.*
+
+import com.netguru.db.Database
+import com.netguru.di.DbModule
+import com.netguru.di.MainModule
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.application.log
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
-import io.ktor.response.*
-import io.ktor.request.*
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
+import io.ktor.response.respond
 import io.ktor.routing.*
-import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import org.koin.ktor.ext.inject
+import org.koin.ktor.ext.installKoin
 import java.text.DateFormat
-import java.util.concurrent.TimeUnit
-
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient as PahoAsync
+
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    install(CORS){
+
+    installKoin(listOf(DbModule, MainModule))
+
+    install(CORS) {
         anyHost()
         method(HttpMethod.Get)
         method(HttpMethod.Put)
@@ -37,35 +44,15 @@ fun Application.module(testing: Boolean = false) {
         header(HttpHeaders.AccessControlAllowMethods)
     }
 
-    val connection: Connection = ConnectionPool(
-        PostgreSQLConnectionFactory(
-            Configuration(
-                username = "pi",
-                password = "spitulis",
-                host = "192.168.0.21",
-                port = 5432,
-                database = "pi"
-            )
-        ), PoolConfiguration(
-            20,
-            TimeUnit.MINUTES.toMillis(15),  // maxIdle
-            10_000,                         // maxQueueSize
-            TimeUnit.SECONDS.toMillis(30)   // validationInterval
-        )
-    )
-    connection.connect().get()
-
-    val db = Database(connection)
-
-    install(ContentNegotiation){
+    install(ContentNegotiation) {
         gson {
             setDateFormat(DateFormat.SHORT)
         }
     }
 
-    val subscribeChannel = Channel<WorkerCmd>()
-    val mqttClient = MqttClient(PahoAsync("tcp://192.168.0.21:1883", "ktor-server"))
-    val worker = MqttWorker(mqttClient, db, subscribeChannel)
+    val db by inject<Database>()
+    val worker by inject<MqttWorker>()
+    val subscribeChannel by inject<Channel<WorkerCmd>>("workerChannel")
 
     GlobalScope.launch {
         worker.doWork()
@@ -74,23 +61,24 @@ fun Application.module(testing: Boolean = false) {
     routing {
         trace { application.log.trace(it.buildText()) }
 
-        get("/get_sensors_all"){
+        get("/get_sensors_all") {
             //returns all sensors
-            call.respond (db.getAllSensors())
+            val sensors = db.getAllSensors()
+            call.respond(sensors)
         }
 
-        put("/add_sensor"){
+        put("/add_sensor") {
             val addSensorReq = call.receive<AddSensorReq>()
             //TODO: add error handling when could not receive object
-            val sensor = db.addSensor(addSensorReq)
+            val sensor = db.modifySensor(null, addSensorReq)
             subscribeChannel.offer(WorkerCmd.Subscribe(sensor))
             call.respond(HttpStatusCode.Created)
         }
 
-        delete("/remove_sensor/{id}"){
+        delete("/remove_sensor/{id}") {
 
             val id = call.parameters["id"]?.toInt()
-            if(id!= null){
+            if (id != null) {
                 db.removeSensor(id)
                 subscribeChannel.offer(WorkerCmd.Unsubscribe(id))
                 call.respond(HttpStatusCode.OK)
@@ -99,10 +87,10 @@ fun Application.module(testing: Boolean = false) {
             }
         }
 
-        patch("/modify_sensor/{id}"){
+        patch("/modify_sensor/{id}") {
             val id = call.parameters["id"]?.toInt()
             val sensorData = call.receive<AddSensorReq>()
-            if(id != null){
+            if (id != null) {
                 subscribeChannel.offer(WorkerCmd.Unsubscribe(id))
                 val sensor = db.modifySensor(id, sensorData)
                 subscribeChannel.offer(WorkerCmd.Subscribe(sensor))
@@ -113,10 +101,10 @@ fun Application.module(testing: Boolean = false) {
         }
 
 
-        get("/get_events_for_transform/{id}/{limit}"){
+        get("/get_events_for_transform/{id}/{limit}") {
             val id = call.parameters["id"]?.toInt()
             val limit = call.parameters["limit"]?.toInt()
-            call.respond(db.getEventsForTransform(id?:0, limit?:10))
+            call.respond(db.getEventsForTransform(id ?: 0, limit ?: 10))
         }
 
     }

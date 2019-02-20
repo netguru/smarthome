@@ -1,13 +1,14 @@
 package com.netguru
 
 import com.jayway.jsonpath.JsonPath
+import com.netguru.db.Database
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 
 sealed class WorkerCmd {
-    data class Subscribe(val sensor: Sensor) : WorkerCmd()
+    data class Subscribe(val sensor: SensorResp) : WorkerCmd()
     data class Unsubscribe(val id: Int) : WorkerCmd()
 }
 
@@ -32,13 +33,11 @@ class MqttWorker(
                             logger.debug { "subscribing to sensor at topic ${command.sensor.topic}" }
                             for (message in mqttClient.subscribe(command.sensor.topic)) {
                                 logger.debug { "message in ${command.sensor.topic} = $message" }
-                                val transforms = db.getTransforms(command.sensor.id)
-                                transforms.forEach {
+                                command.sensor.transforms.forEach {
                                     db.saveEvent(
                                         command.sensor.id,
                                         transform(message, it.transform, it.returnType),
-                                        it.id,
-                                        it.name ?: ""
+                                        it.id
                                     )
                                 }
 
@@ -64,12 +63,13 @@ class MqttWorker(
         }
     }
 
-    private fun transform(data: String, pattern: String, returnType: TransformReturnType): String {
+    private fun transform(data: String, pattern: String, returnType: String): String {
         return when (returnType) {
-            TransformReturnType.BOOLEAN -> JsonPath.parse(data).read<Boolean>(pattern).toString()
-            TransformReturnType.STRING -> JsonPath.parse(data).read<String>(pattern).toString()
-            TransformReturnType.INT -> JsonPath.parse(data).read<Int>(pattern).toString()
-            TransformReturnType.FLOAT -> JsonPath.parse(data).read<Float>(pattern).toString()
+            "BOOLEAN" -> JsonPath.parse(data).read<Boolean>(pattern).toString()
+            "STRING" -> JsonPath.parse(data).read<String>(pattern).toString()
+            "INT" -> JsonPath.parse(data).read<Int>(pattern).toString()
+            "FLOAT" -> JsonPath.parse(data).read<Float>(pattern).toString()
+            else -> throw IllegalArgumentException("Cound not find return type")
         }
     }
 }
