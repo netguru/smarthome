@@ -185,6 +185,7 @@ export default {
       this.$set(this.mSensor.transforms[index], "transform", event.transform);
       this.$set(this.mSensor.transforms[index], "returnType", event.returnType);
       this.$set(this.mSensor.transforms[index], "icon", event.icon);
+      this.$set(this.mSensor.transforms[index], "writable", event.writable)
       if (this.mSensor.transforms[index].action !== "ADD") {
         this.mSensor.transforms[index].action = "UPDATE";
       }

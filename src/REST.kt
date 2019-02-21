@@ -13,7 +13,8 @@ data class TransformReq(
     val transform: String,
     val returnType: String,
     val action: TransformAction,
-    val icon: String?
+    val icon: String?,
+    val writable: Boolean
 )
 
 enum class TransformAction {

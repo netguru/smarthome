@@ -8,8 +8,8 @@ import com.netguru.TransformReq
 import java.sql.ResultSet
 
 interface TransformSql {
-    @Sql("INSERT INTO TRANSFORMS (transform, sensor_id, return_type, name, icon) " +
-            "VALUES (:transform, :sensorId, :returnType, :name, :icon) " +
+    @Sql("INSERT INTO TRANSFORMS (transform, sensor_id, return_type, name, icon, writable) " +
+            "VALUES (:transform, :sensorId, :returnType, :name, :icon, :writable) " +
             "RETURNING id")
     fun insertBulk(@BindBean transforms: List<TransormInsertReq>): List<Int>
 
@@ -19,7 +19,8 @@ interface TransformSql {
     @Sql("DELETE FROM TRANSFORMS WHERE id = :id")
     fun remove(@Bind("id") ids: List<Int>)
 
-    @Sql("UPDATE TRANSFORMS SET (transform, return_type, name, icon) VALUES (:transform, :returnType, :name, :icon) WHERE id=:id")
+    @Sql("UPDATE TRANSFORMS SET (transform, return_type, name, icon, writable) " +
+            "VALUES (:transform, :returnType, :name, :icon, :writable) WHERE id=:id")
     fun modify(@BindBean transforms: List<TransformReq>)
 }
 
@@ -29,7 +30,8 @@ data class TransformEntity(
     val name:String?,
     val transform:String,
     val returnType:String,
-    val icon:String?
+    val icon:String?,
+    val writable: Boolean = false
 )
 
 data class TransormInsertReq (
@@ -37,7 +39,8 @@ data class TransormInsertReq (
     val name:String?,
     val transform:String,
     val returnType:String,
-    val icon:String?
+    val icon:String?,
+    val writable: Boolean = false
 )
 
 class TransformMapper: DbMapper<TransformEntity> {
@@ -48,7 +51,8 @@ class TransformMapper: DbMapper<TransformEntity> {
             r.getString("name"),
             r.getString("transform"),
             r.getString("return_type"),
-            r.getString("icon")
+            r.getString("icon"),
+            r.getBoolean("writable")
             )
     }
 

@@ -21,38 +21,18 @@ class Database(db: Db) {
         // 3. update db according to migration functions
     }
 
-    private fun addTransforms(sensorId: Int, transforms: List<TransformReq>): List<Int> {
-        val addTransforms = transforms.filter { it.action == TransformAction.ADD }
-        if (addTransforms.isNotEmpty()) {
-            return transformSql.insertBulk(
-                addTransforms.map { TransormInsertReq(sensorId, it.name, it.transform, it.returnType, it.icon) }
-            )
-        }
-        return emptyList()
-    }
-
-    fun getAllSensors(): List<SensorResp> {
-        val result = sensorSql.getAllSensors()
-        return result.map {
-            it.toResp(transformSql.getAllForSensor(it.id))
-        }.toList()
-    }
-
-    fun removeSensor(id: Int) {
-        sensorSql.removeSensor(id)
-    }
-
+    //TODO: refactor to do select with join transforms
     fun getSensor(id: Int): SensorResp {
         val result = sensorSql.getSensor(id)
         return result.toResp(transformSql.getAllForSensor(id))
     }
 
-    fun saveEvent(sensorId: Int, transformed: String, transformId: Int) {
-        eventSql.insert(sensorId, transformId, transformed)
-    }
-
-    fun getEventsForTransform(transformId: Int, limit: Int): List<EventEntity> {
-        return eventSql.getForTransform(transformId,limit)
+    //TODO: refactor to do select with join transforms
+    fun getAllSensors(): List<SensorResp> {
+        val result = sensorSql.getAllSensors()
+        return result.map {
+            it.toResp(transformSql.getAllForSensor(it.id))
+        }.toList()
     }
 
     fun modifySensor(id: Int?, sensorData: AddSensorReq): SensorResp {
@@ -70,6 +50,22 @@ class Database(db: Db) {
         return getSensor(sensorId)
     }
 
+    fun removeSensor(id: Int) {
+        sensorSql.removeSensor(id)
+    }
+
+    private fun addTransforms(sensorId: Int, transforms: List<TransformReq>): List<Int> {
+        val addTransforms = transforms.filter { it.action == TransformAction.ADD }
+        if (addTransforms.isNotEmpty()) {
+            return transformSql.insertBulk(
+                addTransforms.map {
+                    TransormInsertReq(sensorId, it.name, it.transform, it.returnType, it.icon, it.writable)
+                }
+            )
+        }
+        return emptyList()
+    }
+
     private fun removeTransforms(transforms: List<TransformReq>) {
         val toRemove = transforms
             .filter { it.action == TransformAction.REMOVE && it.id != null }
@@ -85,6 +81,14 @@ class Database(db: Db) {
         if( toModify.isNotEmpty()) {
             transformSql.modify(toModify)
         }
+    }
+
+    fun saveEvent(sensorId: Int, transformed: String, transformId: Int) {
+        eventSql.insert(sensorId, transformId, transformed)
+    }
+
+    fun getEventsForTransform(transformId: Int, limit: Int): List<EventEntity> {
+        return eventSql.getForTransform(transformId,limit)
     }
 
 }

@@ -1,8 +1,12 @@
 <template>
   <v-layout row class="margins" v-bind:class="transform.action">
+    <v-switch
+     :value="transform.writable"
+     @change="updateSensorWritable($event)"
+     :disabled="transform.action=='REMOVE'"
+     ></v-switch>
     <v-flex xs12 md4>
       <v-text-field
-        ref="name"
         :value="transform.name"
         @input="updateSensorName($event)"
         label="Name"
@@ -11,7 +15,6 @@
     </v-flex>
     <v-flex xs12 md4>
       <v-text-field
-        ref="transform"
         :value="transform.transform"
         @input="updateSensorTransform($event)"
         label="JSON transform"
@@ -20,7 +23,6 @@
     </v-flex>
     <v-flex xs12 md4>
       <v-select
-        ref="returnType"
         :items="items"
         :value="transform.returnType"
         @input="updateSensorReturnType($event)"
@@ -28,41 +30,49 @@
         :disabled="transform.action=='REMOVE'"
       ></v-select>
     </v-flex>
-    <v-flex md1>
+
+    <v-flex xs1 md1>
       <v-img :src="getIcon()" v-if="transform.icon" @click="chooseIcon = !chooseIcon"/>
-      <v-btn flat fab v-if="!transform.icon" @click="chooseIcon = !chooseIcon">
-        <v-icon>web_asset</v-icon>
-      </v-btn>
     </v-flex>
-    <v-flex md2>
-      <v-btn flat icon v-if="transform.action!='REMOVE'">
-        <v-icon color="red" @click="removeClicked">delete</v-icon>
-      </v-btn>
-      <v-btn icon v-if="transform.action=='REMOVE' || transform.action=='UPDATE'">
-        <v-icon @click="cancelUpdateClicked">close</v-icon>
-      </v-btn>
-    </v-flex>
+
+    <v-btn flat fab v-if="!transform.icon" @click="chooseIcon = !chooseIcon">
+      <v-icon>web_asset</v-icon>
+    </v-btn>
+    <v-btn flat icon v-if="transform.action!='REMOVE'">
+      <v-icon color="red" @click="removeClicked">delete</v-icon>
+    </v-btn>
+    <v-btn icon v-if="transform.action=='REMOVE' || transform.action=='UPDATE'">
+      <v-icon @click="cancelUpdateClicked">close</v-icon>
+    </v-btn>
     <v-dialog v-model="chooseIcon">
       <v-card>
-          <v-card-title>Choose icon</v-card-title>
-          <v-card-text>
-            <v-layout row wrap v-if="transform.returnType==='BOOLEAN'">
-                <v-img contain width="40" height="40" v-for="icon in booleanIcons" :key="icon"
-                :src="getBooleanIcon(icon)"
-                @click="selectIcon(icon)"
-                />
-            </v-layout>
+        <v-card-title>Choose icon</v-card-title>
+        <v-card-text>
+          <v-layout row wrap v-if="transform.returnType==='BOOLEAN'">
+            <v-img
+              contain
+              width="40"
+              height="40"
+              v-for="icon in booleanIcons"
+              :key="icon"
+              :src="getBooleanIcon(icon)"
+              @click="selectIcon(icon)"
+            />
+          </v-layout>
 
-            <v-layout row wrap v-else-if="transform.returnType==='INT'">
-                <v-img contain width="40" height="40" v-for="icon in intIcons" :key="icon"
-                :src="getIntIcon(icon)"
-                @click="selectIcon(icon)"
-                />
-            </v-layout>
-            <v-layout v-else>
-                Choose Boolean or Int Return Type first.
-            </v-layout>
-          </v-card-text>
+          <v-layout row wrap v-else-if="transform.returnType==='INT'">
+            <v-img
+              contain
+              width="40"
+              height="40"
+              v-for="icon in intIcons"
+              :key="icon"
+              :src="getIntIcon(icon)"
+              @click="selectIcon(icon)"
+            />
+          </v-layout>
+          <v-layout v-else>Choose Boolean or Int Return Type first.</v-layout>
+        </v-card-text>
       </v-card>
     </v-dialog>
   </v-layout>
@@ -99,9 +109,9 @@ export default {
         "wallswitch",
         "washingmachine",
         "window"
-        ],
+      ],
 
-    intIcons: [
+      intIcons: [
         "battery",
         "blinds",
         "cinemascreen",
@@ -113,7 +123,7 @@ export default {
         "qualityofservice",
         "rollershutter",
         "sewerage"
-        ]
+      ]
     };
   },
   methods: {
@@ -129,17 +139,21 @@ export default {
       this.modified.returnType = returnType;
       this.$emit("update", this.modified);
     },
+    updateSensorWritable(writable) {
+        this.modified.writable = writable
+        this.$emit("update", this.modified)
+    },
     removeClicked() {
       this.$emit("removeClicked");
     },
     cancelUpdateClicked() {
       this.$emit("cancelUpdateClicked");
     },
-    getBooleanIcon(name){
-        return require(`@/assets/icons/booleanIcons/${name}-true.png`);
+    getBooleanIcon(name) {
+      return require(`@/assets/icons/booleanIcons/${name}-true.png`);
     },
-    getIntIcon(name){
-        return require(`@/assets/icons/intIcons/${name}-70.png`);
+    getIntIcon(name) {
+      return require(`@/assets/icons/intIcons/${name}-70.png`);
     },
     getIcon() {
       switch (this.transform.returnType) {
