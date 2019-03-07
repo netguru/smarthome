@@ -147,6 +147,7 @@ export default {
     },
     // transfoorm methods:
     removeTransformClicked(index) {
+        console.log('remove transform clicked');
       if (this.mSensor.transforms[index].action === "ADD") {
         this.mSensor.transforms.splice(index, 1);
       } else {
@@ -155,6 +156,7 @@ export default {
     },
     cancelUpdateClicked(index) {
       const transform = this.mSensor.transforms[index];
+      console.log('cancelUpdateClicked clicked')
       if (transform.action === "REMOVE") {
         this.$set(transform, "action", "");
       } else if (transform.action === "UPDATE") {
@@ -175,6 +177,13 @@ export default {
         transform,
         "icon",
         this.sensor.transforms[index].icon,
+      );
+      let value;
+      if(this.sensor.transforms[index].writable) {value = true} else { value = false}
+      this.$set(
+        transform,
+        "writable",
+        value,
       );
     },
     addTransform() {

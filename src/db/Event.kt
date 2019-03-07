@@ -19,7 +19,7 @@ class EventMapper : DbMapper<EventEntity> {
     override fun map(r: ResultSet): EventEntity {
         return EventEntity(
             r.getInt("id"),
-            r.getInt("sensorId"),
+            r.getInt("sensor_id"),
             r.getTimestamp("timestamp").toLocalDateTime(),
             r.getString("data"),
             r.getInt("transform_id")

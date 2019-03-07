@@ -27,3 +27,9 @@ data class SensorResp(
     val topic: String,
     val transforms: List<TransformEntity>
 )
+
+data class EventReq(
+    val sensorId: Int,
+    val data: String,
+    val transformId: Int
+)

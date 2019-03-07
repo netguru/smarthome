@@ -4,7 +4,7 @@
     <v-layout v-if="error">{{ error }}</v-layout>
     <v-layout v-if="loading === false && error === null">
       <v-layout row wrap align-content-start>
-        <v-flex md3 v-for="sensor in sensors" v-bind:key="sensor.id">
+        <v-flex md3 xs1 v-for="sensor in sensors" v-bind:key="sensor.id">
           <v-card>
             <v-card-title class="dark">{{sensor.name}}</v-card-title>
             <v-card-text>
@@ -12,7 +12,6 @@
                 <v-flex v-for="transform in sensor.transforms" :key="transform.id">
                   <TransformView
                     :transform="transform"
-                    v-if="transform.event"
                     :icon="typeof transform.icon  !== 'undefined'"
                   />
                 </v-flex>
@@ -73,7 +72,7 @@ export default {
           this.loading = false;
           this.error = err.toString();
         });
-    }
+    },
   }
 };
 </script>

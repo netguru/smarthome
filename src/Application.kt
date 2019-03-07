@@ -4,6 +4,7 @@ package com.netguru
 import com.netguru.db.Database
 import com.netguru.di.DbModule
 import com.netguru.di.MainModule
+import com.sun.corba.se.spi.orbutil.threadpool.Work
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -105,6 +106,12 @@ fun Application.module(testing: Boolean = false) {
             val id = call.parameters["id"]?.toInt()
             val limit = call.parameters["limit"]?.toInt()
             call.respond(db.getEventsForTransform(id ?: 0, limit ?: 10))
+        }
+
+        put("/add_event"){
+            val event = call.receive<EventReq>()
+            subscribeChannel.offer(WorkerCmd.PostEvent(event))
+            call.respond(HttpStatusCode.OK)
         }
 
     }

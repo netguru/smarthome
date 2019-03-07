@@ -21,13 +21,13 @@ class Database(db: Db) {
         // 3. update db according to migration functions
     }
 
-    //TODO: refactor to do select with join transforms
+    //TODO: refactor to do select join transforms
     fun getSensor(id: Int): SensorResp {
         val result = sensorSql.getSensor(id)
         return result.toResp(transformSql.getAllForSensor(id))
     }
 
-    //TODO: refactor to do select with join transforms
+    //TODO: refactor to do select join transforms
     fun getAllSensors(): List<SensorResp> {
         val result = sensorSql.getAllSensors()
         return result.map {

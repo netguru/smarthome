@@ -1,10 +1,13 @@
 <template>
   <v-layout row class="margins" v-bind:class="transform.action">
-    <v-switch
-     :value="transform.writable"
-     @change="updateSensorWritable($event)"
-     :disabled="transform.action=='REMOVE'"
-     ></v-switch>
+      <v-flex xs1 md1>
+    <v-checkbox
+        :value="transform.writable"
+        @change="updateSensorWritable()"
+        :disabled="transform.action=='REMOVE'"
+        ></v-checkbox>
+      </v-flex>
+
     <v-flex xs12 md4>
       <v-text-field
         :value="transform.name"
@@ -126,6 +129,12 @@ export default {
       ]
     };
   },
+  mounted() {
+    this.modified = clonedeep(this.transform)
+  },
+  updated(){
+      this.modified = clonedeep(this.transform)
+  },
   methods: {
     updateSensorName(name) {
       this.modified.name = name;
@@ -137,10 +146,11 @@ export default {
     },
     updateSensorReturnType(returnType) {
       this.modified.returnType = returnType;
+      this.modified.icon = "";
       this.$emit("update", this.modified);
     },
     updateSensorWritable(writable) {
-        this.modified.writable = writable
+        this.modified.writable = !this.modified.writable
         this.$emit("update", this.modified)
     },
     removeClicked() {

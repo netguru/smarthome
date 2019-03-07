@@ -20,7 +20,7 @@ interface TransformSql {
     fun remove(@Bind("id") ids: List<Int>)
 
     @Sql("UPDATE TRANSFORMS SET (transform, return_type, name, icon, writable) " +
-            "VALUES (:transform, :returnType, :name, :icon, :writable) WHERE id=:id")
+            "= (:transform, :returnType, :name, :icon, :writable) WHERE id=:id")
     fun modify(@BindBean transforms: List<TransformReq>)
 }
 
@@ -31,7 +31,7 @@ data class TransformEntity(
     val transform:String,
     val returnType:String,
     val icon:String?,
-    val writable: Boolean = false
+    val writable: Boolean
 )
 
 data class TransormInsertReq (
@@ -40,7 +40,7 @@ data class TransormInsertReq (
     val transform:String,
     val returnType:String,
     val icon:String?,
-    val writable: Boolean = false
+    val writable: Boolean
 )
 
 class TransformMapper: DbMapper<TransformEntity> {

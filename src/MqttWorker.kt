@@ -1,6 +1,7 @@
 package com.netguru
 
 import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.PathNotFoundException
 import com.netguru.db.Database
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -10,6 +11,7 @@ import mu.KotlinLogging
 sealed class WorkerCmd {
     data class Subscribe(val sensor: SensorResp) : WorkerCmd()
     data class Unsubscribe(val id: Int) : WorkerCmd()
+    data class PostEvent(val event: EventReq) : WorkerCmd()
 }
 
 private val logger = KotlinLogging.logger {}
@@ -34,11 +36,17 @@ class MqttWorker(
                             for (message in mqttClient.subscribe(command.sensor.topic)) {
                                 logger.debug { "message in ${command.sensor.topic} = $message" }
                                 command.sensor.transforms.forEach {
-                                    db.saveEvent(
-                                        command.sensor.id,
-                                        transform(message, it.transform, it.returnType),
-                                        it.id
-                                    )
+                                    val data =  try { transform(message, it.transform, it.returnType) }
+                                    catch (e: PathNotFoundException){
+                                        null
+                                    }
+                                    if(data != null){
+                                        db.saveEvent(
+                                            command.sensor.id,
+                                            data,
+                                            it.id
+                                        )
+                                    }
                                 }
 
                                 //TODO: add posting event to refresh using websocket
@@ -50,6 +58,26 @@ class MqttWorker(
                         launch {
                             val sensor = db.getSensor(command.id)
                             mqttClient.unsubscribe(sensor.topic)
+                        }
+                    }
+                    is WorkerCmd.PostEvent -> {
+                        launch {
+                            val sensor = db.getSensor(command.event.sensorId)
+
+                            val transform = sensor.transforms.first { it.id == command.event.transformId }
+
+                            val field = transform.transform
+                                .split(".")
+                                .last()
+
+                            val json = if (transform.returnType == "STRING") {
+                                "{\"$field\": \"${command.event.data}\" }"
+                            } else {
+                                "{\"$field\": ${command.event.data} }"
+                            }
+                            logger.debug { "publishing to ${sensor.topic} value: $json" }
+                            mqttClient.publish(sensor.topic, json)
+                            //TODO: add posting event to refresh using websocket
                         }
                     }
                 }
