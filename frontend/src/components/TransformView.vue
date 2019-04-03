@@ -33,6 +33,11 @@ export default {
     transform: Object,
     icon: Boolean,
   },
+  data () {
+      return {
+          intDialogShow: false,
+      }
+  },
   computed: {
       booleanPath() {
           if(this.notUndef(this.transform.event)){
@@ -61,14 +66,37 @@ export default {
               case "BOOLEAN": {
                   console.log("BOOLEAN");
                   let value = this.transform.event.data
-                  if( !this.notUndef(value)){
-                        value = false;
+                  if( this.notUndef(value)){
+                      if(value.toLowerCase() === 'true'){
+                          value = "false"
+                      } else {
+                          value = "true"
+                      }
+                  } else {
+                      value = "false";
                   }
-
+                  let field = this.transform.transform.split(".").slice(-1)[0];
+                  let event = {
+                      "sensorId": this.transform.sensorId,
+                      "transformId": this.transform.id,
+                      "data": value
+                  }
+                  axios.put(`${this.$store.state.host}/add_event`,JSON.stringify(event),
+                    {
+                        headers: {
+                        "Content-Type": "application/json",
+                        },
+                    })
+                    .then((response) => {
+                        setTimeout(() => {
+                            this.$emit("refresh")
+                        }, 3000);
+                    });
                   break;
               }
               case "INT": {
                   console.log("INT");
+                  this.$emit("showDialog", "INT")
                   break;
               }
               case "FLOAT": {

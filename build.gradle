@@ -27,6 +27,7 @@ repositories {
     mavenLocal()
     jcenter()
     maven { url 'https://kotlin.bintray.com/ktor' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -46,6 +47,8 @@ dependencies {
     compile "org.koin:koin-core:1.0.2"
     compile "org.koin:koin-core-ext:1.0.2"
     compile "org.koin:koin-ktor:1.0.2"
+
+    compile 'com.uchuhimo:konf:0.13.2'
 
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
 }

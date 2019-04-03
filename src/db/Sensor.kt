@@ -4,8 +4,8 @@ import com.github.mjdbc.Bind
 import com.github.mjdbc.BindBean
 import com.github.mjdbc.DbMapper
 import com.github.mjdbc.Sql
-import com.netguru.AddSensorReq
-import com.netguru.SensorResp
+import app.AddSensorReq
+import app.SensorResp
 import java.sql.ResultSet
 
 

@@ -4,7 +4,7 @@ import com.github.mjdbc.Bind
 import com.github.mjdbc.BindBean
 import com.github.mjdbc.DbMapper
 import com.github.mjdbc.Sql
-import com.netguru.TransformReq
+import app.TransformReq
 import java.sql.ResultSet
 
 interface TransformSql {

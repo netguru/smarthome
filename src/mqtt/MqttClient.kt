@@ -1,9 +1,8 @@
-package com.netguru
+package mqtt
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
+import mu.KotlinLogging
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
@@ -12,30 +11,37 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient as PahoClient
 
+private val logger = KotlinLogging.logger {}
+
 class MqttClient(private val client: PahoClient) {
 
     private val channelsMap = HashMap<String, Channel<String>>()
 
+    fun isConnected() = client.isConnected
+
     suspend fun connect(user: String, pass: String) = suspendCancellableCoroutine<Unit> {
+        logger.debug { "connecting" }
         client.connect(MqttConnectOptions().apply {
             userName = user
             password = pass.toCharArray()
         }, null, object : IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken) {
+                logger.debug { "OK" }
                 it.resume(Unit)
             }
 
             override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable) {
+                logger.debug { "Error" }
                 it.resumeWithException(exception)
             }
         })
     }
 
-    suspend fun publish(topic: String, message: String) = suspendCancellableCoroutine<IMqttToken> {
+    suspend fun publish(topic: String, message: String) = suspendCancellableCoroutine<Unit> {
         client.publish(topic, MqttMessage(message.toByteArray()), null, object : IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken?) {
-                if(asyncActionToken != null){
-                    it.resume(asyncActionToken)
+                if(asyncActionToken != null && asyncActionToken.isComplete){
+                    it.resume(Unit)
                 } else {
                     it.resumeWithException(NullPointerException("publish success but  with no Token"))
                 }
@@ -55,28 +61,50 @@ class MqttClient(private val client: PahoClient) {
 
     suspend fun subscribe(topic: String)  = suspendCancellableCoroutine<Channel<String>> {
         val channel = channelsMap[topic] ?: Channel()
-
-        client.subscribe(topic,0) { _, message ->
-            channel.offer("$message")
-        }.actionCallback = object : IMqttActionListener {
+        logger.debug { "subscribing $topic" }
+        client.subscribe(topic,0, null, object : IMqttActionListener {
             override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable) {
+                logger.debug { "failed subcription to $topic with $exception" }
                 channel.close()
                 it.resumeWithException(exception)
             }
 
             override fun onSuccess(asyncActionToken: IMqttToken?) {
                 channelsMap[topic] = channel
+                logger.debug { "subscribed to $topic" }
                 it.resume(channel)
             }
+        }) { _, message ->
+            channel.offer("$message")
         }
     }
 
-    suspend fun unsubscribe(topic: String) = withContext(Dispatchers.IO) {
+    suspend fun unsubscribe(topic: String) = suspendCancellableCoroutine<Unit> {
         channelsMap[topic]?.close()
-        client.unsubscribe(topic)
+        channelsMap.remove(topic)
+        client.unsubscribe(topic, null, object: IMqttActionListener {
+            override fun onSuccess(asyncActionToken: IMqttToken?) {
+                it.resume(Unit)
+            }
+
+            override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable) {
+                it.resumeWithException(exception)
+            }
+        })
     }
 
-    companion object {
-        const val ALL_TOPICS = "#"
+    suspend fun disconnect() = suspendCancellableCoroutine<Unit>{
+        channelsMap.forEach { channel ->  channel.value.close() }
+        channelsMap.clear()
+        client.disconnect(null, object : IMqttActionListener {
+            override fun onSuccess(asyncActionToken: IMqttToken?) {
+                it.resume(Unit)
+            }
+
+            override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable) {
+                it.resumeWithException(exception)
+            }
+
+        })
     }
 }

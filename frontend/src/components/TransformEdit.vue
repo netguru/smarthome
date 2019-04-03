@@ -2,7 +2,7 @@
   <v-layout row class="margins" v-bind:class="transform.action">
       <v-flex xs1 md1>
     <v-checkbox
-        :value="transform.writable"
+        :value="transform.writable == true"
         @change="updateSensorWritable()"
         :disabled="transform.action=='REMOVE'"
         ></v-checkbox>
@@ -133,7 +133,7 @@ export default {
     this.modified = clonedeep(this.transform)
   },
   updated(){
-      this.modified = clonedeep(this.transform)
+    this.modified = clonedeep(this.transform)
   },
   methods: {
     updateSensorName(name) {

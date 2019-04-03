@@ -1,11 +1,11 @@
 <template>
-  <v-layout>
+  <v-layout align-content-start>
     <v-layout v-if="loading">Loading...</v-layout>
     <v-layout v-if="error">{{ error }}</v-layout>
     <v-layout v-if="loading === false && error === null">
-      <v-layout row wrap align-content-start>
-        <v-flex md3 xs1 v-for="sensor in sensors" v-bind:key="sensor.id">
-          <v-card>
+      <v-layout row wrap >
+        <v-flex xs12 md3 v-for="sensor in sensors" v-bind:key="sensor.id">
+          <v-card >
             <v-card-title class="dark">{{sensor.name}}</v-card-title>
             <v-card-text>
               <v-layout column>
@@ -13,6 +13,8 @@
                   <TransformView
                     :transform="transform"
                     :icon="typeof transform.icon  !== 'undefined'"
+                    v-on:refresh="fetchData()"
+                    v-on:showDialog="showDialog($event)"
                   />
                 </v-flex>
               </v-layout>
@@ -21,6 +23,18 @@
         </v-flex>
       </v-layout>
     </v-layout>
+    <v-dialog v-model="intDialogShow">
+      <v-card>
+          <v-card-title class="dark" primary-title>Set value</v-card-title>
+          <v-card-text>
+              <v-slider
+                label="SLIDER"
+                value="30"
+                v-on:end="intSliderEnd()"
+                ></v-slider>
+          </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-layout>
 </template>
 
@@ -36,7 +50,9 @@ export default {
       sensors: null,
       error: null,
       loading: false,
-      timer: ""
+      timer: "",
+      intDialogShow: false,
+      dialogTransform: null,
     };
   },
   created() {
@@ -73,6 +89,13 @@ export default {
           this.error = err.toString();
         });
     },
+    showDialog(dialogType){
+        this.dialogTransform = dialogType;
+        this.intDialogShow = true;
+    },
+    intSliderEnd(){
+
+    }
   }
 };
 </script>

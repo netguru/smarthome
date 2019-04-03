@@ -2,10 +2,10 @@ package com.netguru.db
 
 
 import com.github.mjdbc.Db
-import com.netguru.AddSensorReq
-import com.netguru.SensorResp
-import com.netguru.TransformAction
-import com.netguru.TransformReq
+import app.AddSensorReq
+import app.SensorResp
+import app.TransformAction
+import app.TransformReq
 
 
 class Database(db: Db) {

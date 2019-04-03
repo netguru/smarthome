@@ -1,4 +1,4 @@
-package com.netguru
+package app
 
 import com.netguru.db.TransformEntity
 
@@ -32,4 +32,13 @@ data class EventReq(
     val sensorId: Int,
     val data: String,
     val transformId: Int
+)
+
+data class SettingsReq (
+    val dbUrl: String,
+    val dbUser: String,
+    val dbPass: String,
+    val mqttUrl: String,
+    val mqttUser: String,
+    val mqttPass: String
 )

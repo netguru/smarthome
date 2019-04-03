@@ -1,5 +1,7 @@
-package com.netguru
+package mqtt
 
+import app.EventReq
+import app.SensorResp
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import com.netguru.db.Database
@@ -18,9 +20,22 @@ private val logger = KotlinLogging.logger {}
 
 class MqttWorker(
     private val mqttClient: MqttClient,
-    private val db: Database,
-    private val subscribeChannel: Channel<WorkerCmd>
+    private val db: Database
 ) {
+
+    private val subscribeChannel = Channel<WorkerCmd>()
+
+    suspend fun subscribe(sensor: SensorResp) = coroutineScope{
+        subscribeChannel.send(WorkerCmd.Subscribe(sensor))
+    }
+
+    suspend fun unsubscribe(id: Int) = coroutineScope{
+        subscribeChannel.send(WorkerCmd.Unsubscribe(id))
+    }
+
+    suspend fun postEvent(event: EventReq) = coroutineScope{
+        subscribeChannel.send(WorkerCmd.PostEvent(event))
+    }
 
     suspend fun doWork() = coroutineScope {
         //TODO: refactor user / pass to some env variable / pass store

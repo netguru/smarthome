@@ -2,12 +2,10 @@ package com.netguru.di
 
 import com.github.mjdbc.DbFactory
 import com.netguru.db.Database
-import com.netguru.MqttClient
-import com.netguru.MqttWorker
-import com.netguru.WorkerCmd
+import mqtt.MqttClient
+import mqtt.MqttWorker
 import com.netguru.db.*
 import com.zaxxer.hikari.HikariDataSource
-import kotlinx.coroutines.channels.Channel
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient
 import org.koin.dsl.module.module
 
@@ -30,8 +28,7 @@ val DbModule = module {
 }
 
 val MainModule = module {
-    single("workerChannel") { Channel<WorkerCmd>() }
     single { MqttClient(MqttAsyncClient("tcp://192.168.0.21:1883", "ktor-server")) }
     single { Database(get()) }
-    single { MqttWorker(get(), get(), get("workerChannel")) }
+    single { MqttWorker(get(), get()) }
 }
