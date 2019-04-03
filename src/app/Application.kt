@@ -7,7 +7,6 @@ import com.netguru.di.DbModule
 import com.netguru.di.MainModule
 import com.uchuhimo.konf.Config
 import io.ktor.application.Application
-import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.features.CORS
@@ -15,9 +14,6 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
-import io.ktor.response.respond
 import io.ktor.routing.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -58,7 +54,7 @@ fun Application.module(testing: Boolean = false) {
     val worker by inject<MqttWorker>()
 
     GlobalScope.launch {
-        worker.doWork()
+        worker.connectAndRun("pi", "spitulis")
     }
 
     routing {

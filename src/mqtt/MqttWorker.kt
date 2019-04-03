@@ -37,63 +37,22 @@ class MqttWorker(
         subscribeChannel.send(WorkerCmd.PostEvent(event))
     }
 
-    suspend fun doWork() = coroutineScope {
+    suspend fun connectAndRun(user: String, pass: String) = coroutineScope {
         //TODO: refactor user / pass to some env variable / pass store
-        mqttClient.connect("pi", "spitulis")
+        mqttClient.connect(user, pass)
         logger.debug { "mqtt connected" }
 
         launch {
             for (command in subscribeChannel) {
                 when (command) {
                     is WorkerCmd.Subscribe -> {
-                        launch {
-                            logger.debug { "subscribing to sensor at topic ${command.sensor.topic}" }
-                            for (message in mqttClient.subscribe(command.sensor.topic)) {
-                                logger.debug { "message in ${command.sensor.topic} = $message" }
-                                command.sensor.transforms.forEach {
-                                    val data =  try { transform(message, it.transform, it.returnType) }
-                                    catch (e: PathNotFoundException){
-                                        null
-                                    }
-                                    if(data != null){
-                                        db.saveEvent(
-                                            command.sensor.id,
-                                            data,
-                                            it.id
-                                        )
-                                    }
-                                }
-
-                                //TODO: add posting event to refresh using websocket
-                            }
-                            logger.debug { "closing coroutine for ${command.sensor.id} topic: ${command.sensor.topic}" }
-                        }
+                        subscribeAction(command)
                     }
                     is WorkerCmd.Unsubscribe -> {
-                        launch {
-                            val sensor = db.getSensor(command.id)
-                            mqttClient.unsubscribe(sensor.topic)
-                        }
+                        unsubscribeAction(command)
                     }
                     is WorkerCmd.PostEvent -> {
-                        launch {
-                            val sensor = db.getSensor(command.event.sensorId)
-
-                            val transform = sensor.transforms.first { it.id == command.event.transformId }
-
-                            val field = transform.transform
-                                .split(".")
-                                .last()
-
-                            val json = if (transform.returnType == "STRING") {
-                                "{\"$field\": \"${command.event.data}\" }"
-                            } else {
-                                "{\"$field\": ${command.event.data} }"
-                            }
-                            logger.debug { "publishing to ${sensor.topic} value: $json" }
-                            mqttClient.publish(sensor.topic, json)
-                            //TODO: add posting event to refresh using websocket
-                        }
+                        postEventAction(command)
                     }
                 }
 
@@ -102,8 +61,56 @@ class MqttWorker(
 
         //subscribe to all sensors at startup
         db.getAllSensors().forEach {
-            subscribeChannel.send(WorkerCmd.Subscribe(it))
+            subscribe(it)
         }
+    }
+
+    private suspend fun postEventAction(command: WorkerCmd.PostEvent) = coroutineScope {
+        val sensor = db.getSensor(command.event.sensorId)
+
+        val transform = sensor.transforms.first { it.id == command.event.transformId }
+
+        val field = transform.transform
+            .split(".")
+            .last()
+
+        val json = if (transform.returnType == "STRING") {
+            "{\"$field\": \"${command.event.data}\" }"
+        } else {
+            "{\"$field\": ${command.event.data} }"
+        }
+        logger.debug { "publishing to ${sensor.topic} value: $json" }
+        mqttClient.publish(sensor.topic, json)
+        //TODO: add posting event to refresh using websocket
+    }
+
+    private suspend fun unsubscribeAction(command: WorkerCmd.Unsubscribe) = coroutineScope {
+        val sensor = db.getSensor(command.id)
+        mqttClient.unsubscribe(sensor.topic)
+    }
+
+    private suspend fun subscribeAction(command: WorkerCmd.Subscribe) = coroutineScope {
+        logger.debug { "subscribing to sensor at topic ${command.sensor.topic}" }
+        for (message in mqttClient.subscribe(command.sensor.topic)) {
+            logger.debug { "message in ${command.sensor.topic} = $message" }
+            command.sensor.transforms.forEach {
+                val data = try {
+                    transform(message, it.transform, it.returnType)
+                } catch (e: PathNotFoundException) {
+                    null
+                }
+                if (data != null) {
+                    db.saveEvent(
+                        command.sensor.id,
+                        data,
+                        it.id
+                    )
+                }
+            }
+
+            //TODO: add posting event to refresh using websocket
+        }
+        logger.debug { "closing coroutine for ${command.sensor.id} topic: ${command.sensor.topic}" }
     }
 
     private fun transform(data: String, pattern: String, returnType: String): String {
