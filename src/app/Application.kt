@@ -3,9 +3,9 @@ package app
 
 import app.routes.*
 import com.netguru.db.Database
-import com.netguru.di.DbModule
-import com.netguru.di.MainModule
-import com.uchuhimo.konf.Config
+import di.ConfigModule
+import di.DbModule
+import di.MainModule
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.application.log
@@ -30,9 +30,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
 
-    val config = Config { addSpec(Base) }
-
-    installKoin(listOf(DbModule, MainModule))
+    installKoin(listOf(ConfigModule, DbModule, MainModule))
 
     install(CORS) {
         anyHost()
@@ -54,7 +52,7 @@ fun Application.module(testing: Boolean = false) {
     val worker by inject<MqttWorker>()
 
     GlobalScope.launch {
-        worker.connectAndRun("pi", "spitulis")
+        worker.connectAndRun()
     }
 
     routing {
@@ -67,7 +65,5 @@ fun Application.module(testing: Boolean = false) {
         addEvent(worker)
         modifySensor(db,worker)
         saveSettings()
-
-
     }
 }

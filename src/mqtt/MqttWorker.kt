@@ -2,26 +2,29 @@ package mqtt
 
 import app.EventReq
 import app.SensorResp
+import app.Server
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import com.netguru.db.Database
+import com.uchuhimo.konf.Config
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 
-sealed class WorkerCmd {
-    data class Subscribe(val sensor: SensorResp) : WorkerCmd()
-    data class Unsubscribe(val id: Int) : WorkerCmd()
-    data class PostEvent(val event: EventReq) : WorkerCmd()
-}
-
 private val logger = KotlinLogging.logger {}
 
 class MqttWorker(
     private val mqttClient: MqttClient,
-    private val db: Database
+    private val db: Database,
+    private val config: Config
 ) {
+
+    private sealed class WorkerCmd {
+        data class Subscribe(val sensor: SensorResp) : WorkerCmd()
+        data class Unsubscribe(val id: Int) : WorkerCmd()
+        data class PostEvent(val event: EventReq) : WorkerCmd()
+    }
 
     private val subscribeChannel = Channel<WorkerCmd>()
 
@@ -37,25 +40,31 @@ class MqttWorker(
         subscribeChannel.send(WorkerCmd.PostEvent(event))
     }
 
-    suspend fun connectAndRun(user: String, pass: String) = coroutineScope {
-        //TODO: refactor user / pass to some env variable / pass store
-        mqttClient.connect(user, pass)
+    suspend fun connectAndRun() = coroutineScope {
+        mqttClient.connect(config[Server.mqttUser], config[Server.mqttPass])
         logger.debug { "mqtt connected" }
 
         launch {
             for (command in subscribeChannel) {
                 when (command) {
                     is WorkerCmd.Subscribe -> {
-                        subscribeAction(command)
+                        launch {
+                            subscribeAction(command)
+                        }
+
                     }
                     is WorkerCmd.Unsubscribe -> {
-                        unsubscribeAction(command)
+                        launch {
+                            unsubscribeAction(command)
+                        }
+
                     }
                     is WorkerCmd.PostEvent -> {
-                        postEventAction(command)
+                        launch {
+                            postEventAction(command)
+                        }
                     }
                 }
-
             }
         }
 

@@ -20,7 +20,7 @@ class MqttClient(private val client: PahoClient) {
     fun isConnected() = client.isConnected
 
     suspend fun connect(user: String, pass: String) = suspendCancellableCoroutine<Unit> {
-        logger.debug { "connecting" }
+        logger.debug { "connecting user: $user" }
         client.connect(MqttConnectOptions().apply {
             userName = user
             password = pass.toCharArray()

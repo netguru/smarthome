@@ -2,15 +2,13 @@ package app
 
 import com.uchuhimo.konf.ConfigSpec
 
-object Base: ConfigSpec() {
-    object Database: ConfigSpec(){
-        val url by optional("localhost")
-        val user by optional("")
-        val password by optional("")
-    }
-    object Mqtt: ConfigSpec() {
-        val url by optional("localhost")
-        val user by optional("")
-        val password by optional("")
-    }
+object Server: ConfigSpec() {
+
+        val mqttUrl by optional("localhost")
+        val mqttUser by optional("")
+        val mqttPass by optional("")
+
+        val dbUrl by optional("localhost")
+        val dbUser by optional("")
+        val dbPass by optional("")
 }
