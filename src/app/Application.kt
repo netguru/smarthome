@@ -3,6 +3,8 @@ package app
 
 import app.routes.*
 import com.netguru.db.Database
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.json.toJson
 import di.ConfigModule
 import di.DbModule
 import di.MainModule
@@ -14,12 +16,17 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.content.default
+import io.ktor.http.content.file
+import io.ktor.http.content.files
+import io.ktor.http.content.static
 import io.ktor.routing.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mqtt.MqttWorker
 import org.koin.ktor.ext.inject
 import org.koin.ktor.ext.installKoin
+import java.io.File
 import java.text.DateFormat
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient as PahoAsync
 
@@ -50,6 +57,7 @@ fun Application.module(testing: Boolean = false) {
 
     val db by inject<Database>()
     val worker by inject<MqttWorker>()
+    val config by inject<Config>()
 
     GlobalScope.launch {
         worker.connectAndRun()
@@ -64,6 +72,12 @@ fun Application.module(testing: Boolean = false) {
         getEventsForTransform(db)
         addEvent(worker)
         modifySensor(db,worker)
-        saveSettings()
+        saveSettings(config)
+
+        static("/") {
+            files("./frontend/dist")
+            file("./frontend/dist/favicon.ico", "favicon.ico")
+            default("./frontend/dist/index.html")
+        }
     }
 }

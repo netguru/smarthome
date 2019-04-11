@@ -40,9 +40,12 @@ val MainModule = module {
 }
 
 val ConfigModule = module {
-    single { Config { addSpec(Server) }
-        .from.yaml.resource("config.json")
-        //.from.env()
-        //.from.yaml.file("config.json")
+    single {
+        Config { addSpec(Server) }
+            .from.json.resource("config.json")
+            .from.json.file(get<String>("defaultConfigPath"))
+            .from.env()
     }
+
+    single("defaultConfigPath") { "./config.json" }
 }
