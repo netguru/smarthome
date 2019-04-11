@@ -2,7 +2,7 @@
   <v-layout row class="margins" v-bind:class="transform.action">
       <v-flex xs1 md1>
     <v-checkbox
-        :value="transform.writable == true"
+        :value="transform.writable"
         @change="updateSensorWritable()"
         :disabled="transform.action=='REMOVE'"
         ></v-checkbox>
@@ -86,7 +86,7 @@ import clonedeep from "lodash.clonedeep";
 export default {
   name: "Transform",
   props: {
-    transform: Object
+    transform: Object,
   },
   data() {
     return {
@@ -111,7 +111,7 @@ export default {
         "switch",
         "wallswitch",
         "washingmachine",
-        "window"
+        "window",
       ],
 
       intIcons: [
@@ -125,15 +125,15 @@ export default {
         "light",
         "qualityofservice",
         "rollershutter",
-        "sewerage"
-      ]
+        "sewerage",
+      ],
     };
   },
   mounted() {
-    this.modified = clonedeep(this.transform)
+    this.modified = clonedeep(this.transform);
   },
-  updated(){
-    this.modified = clonedeep(this.transform)
+  updated() {
+    this.modified = clonedeep(this.transform);
   },
   methods: {
     updateSensorName(name) {
@@ -150,8 +150,8 @@ export default {
       this.$emit("update", this.modified);
     },
     updateSensorWritable(writable) {
-        this.modified.writable = !this.modified.writable
-        this.$emit("update", this.modified)
+      this.modified.writable = !this.modified.writable;
+      this.$emit("update", this.modified);
     },
     removeClicked() {
       this.$emit("removeClicked");
@@ -160,10 +160,10 @@ export default {
       this.$emit("cancelUpdateClicked");
     },
     getBooleanIcon(name) {
-      return require(`@/assets/icons/booleanIcons/${name}-true.png`);
+      return `icons/booleanIcons/${name}-true.png`;
     },
     getIntIcon(name) {
-      return require(`@/assets/icons/intIcons/${name}-70.png`);
+      return `icons/intIcons/${name}-70.png`;
     },
     getIcon() {
       switch (this.transform.returnType) {
@@ -179,8 +179,8 @@ export default {
       this.modified.icon = icon;
       this.$emit("update", this.modified);
       this.chooseIcon = false;
-    }
-  }
+    },
+  },
 };
 </script>
 

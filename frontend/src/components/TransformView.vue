@@ -33,82 +33,78 @@ export default {
     transform: Object,
     icon: Boolean,
   },
-  data () {
-      return {
-          intDialogShow: false,
-      }
+  data() {
+    return {
+      intDialogShow: false,
+    };
   },
   computed: {
-      booleanPath() {
-          if(this.notUndef(this.transform.event)){
-                return require(`@/assets/icons/booleanIcons/${this.transform.icon}-${this.transform.event.data}.png`);
-          } else {
-              return "";
-          }
-
-      },
-      intPath() {
-          if(this.notUndef(this.transform.event)){
-                let value = Math.floor(this.transform.event.data / 10) * 10;
-                return require(`@/assets/icons/intIcons/${this.transform.icon}-${value}.png`);
-          } else {
-              return "";
-          }
-
+    booleanPath() {
+      if (this.notUndef(this.transform.event)) {
+        return `icons/booleanIcons/${this.transform.icon}-${this.transform.event.data}.png`;
       }
+      return "";
+    },
+    intPath() {
+      if (this.notUndef(this.transform.event)) {
+        const value = Math.floor(this.transform.event.data / 10) * 10;
+        return `icons/intIcons/${this.transform.icon}-${value}.png`;
+      }
+      return "";
+    },
   },
   methods: {
-      notUndef(item){
-          return typeof item !== 'undefined'
-      },
-      clicked(){
-          switch(this.transform.returnType){
-              case "BOOLEAN": {
-                  console.log("BOOLEAN");
-                  let value = this.transform.event.data
-                  if( this.notUndef(value)){
-                      if(value.toLowerCase() === 'true'){
-                          value = "false"
-                      } else {
-                          value = "true"
-                      }
-                  } else {
-                      value = "false";
-                  }
-                  let field = this.transform.transform.split(".").slice(-1)[0];
-                  let event = {
-                      "sensorId": this.transform.sensorId,
-                      "transformId": this.transform.id,
-                      "data": value
-                  }
-                  axios.put(`${this.$store.state.host}/add_event`,JSON.stringify(event),
-                    {
-                        headers: {
-                        "Content-Type": "application/json",
-                        },
-                    })
-                    .then((response) => {
-                        setTimeout(() => {
-                            this.$emit("refresh")
-                        }, 3000);
-                    });
-                  break;
-              }
-              case "INT": {
-                  console.log("INT");
-                  this.$emit("showDialog", "INT")
-                  break;
-              }
-              case "FLOAT": {
-                  console.log("FLOAT");
-                  break;
-              }
-              case "STRING": {
-                  console.log("STRING");
-                  break;
-              }
+    notUndef(item) {
+      return typeof item !== "undefined";
+    },
+    clicked() {
+      switch (this.transform.returnType) {
+        case "BOOLEAN": {
+          console.log("BOOLEAN");
+          let value = this.transform.event.data;
+          if (this.notUndef(value)) {
+            if (value.toLowerCase() === "true") {
+              value = "false";
+            } else {
+              value = "true";
+            }
+          } else {
+            value = "false";
           }
+          const field = this.transform.transform.split(".").slice(-1)[0];
+          const event = {
+            sensorId: this.transform.sensorId,
+            transformId: this.transform.id,
+            data: value,
+          };
+          axios.put(`${this.$store.state.host}/add_event`, JSON.stringify(event),
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+            .then((response) => {
+              setTimeout(() => {
+                this.$emit("refresh");
+              }, 3000);
+            });
+          break;
+        }
+        case "INT": {
+          console.log("INT");
+          this.$emit("showDialog", this.transform);
+          break;
+        }
+        case "FLOAT": {
+          console.log("FLOAT");
+          break;
+        }
+        case "STRING": {
+          console.log("STRING");
+          break;
+        }
       }
-  }
+    },
+  },
 };
 </script>

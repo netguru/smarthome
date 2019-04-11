@@ -67,35 +67,35 @@ export default {
       this.loading = true;
       axios
         .get(`${this.$store.state.host}/get_sensors_all`)
-        .then(response => {
+        .then((response) => {
           this.sensors = response.data;
           this.loading = false;
-          this.sensors.forEach(sensor => {
-            sensor.transforms.forEach(transform => {
+          this.sensors.forEach((sensor) => {
+            sensor.transforms.forEach((transform) => {
               axios
                 .get(
                   `${this.$store.state.host}/get_events_for_transform/${
                     transform.id
-                  }/1`
+                  }/1`,
                 )
-                .then(responseTrans => {
+                .then((responseTrans) => {
                   this.$set(transform, "event", responseTrans.data[0]);
                 });
             });
           });
         })
-        .catch(err => {
+        .catch((err) => {
           this.loading = false;
           this.error = err.toString();
         });
     },
-    showDialog(dialogType){
-        this.dialogTransform = dialogType;
-        this.intDialogShow = true;
+    showDialog(dialogType) {
+      this.dialogTransform = dialogType;
+      this.intDialogShow = true;
     },
-    intSliderEnd(){
+    intSliderEnd() {
 
-    }
-  }
+    },
+  },
 };
 </script>
