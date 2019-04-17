@@ -1,0 +1,2 @@
+(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["groups"],{"696f":function(n,e,u){"use strict";u.r(e);var o=function(){var n=this,e=n.$createElement,u=n._self._c||e;return u("v-layout",[n._v("\n    Groups\n")])},t=[],s=u("0c7c"),l={},r=Object(s["a"])(l,o,t,!1,null,null,null);r.options.__file="Groups.vue";e["default"]=r.exports}}]);
+//# sourceMappingURL=groups.e96b40c5.js.map

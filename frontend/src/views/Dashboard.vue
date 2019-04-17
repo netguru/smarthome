@@ -66,7 +66,7 @@ export default {
     fetchData() {
       this.loading = true;
       axios
-        .get(`${this.$store.state.host}/get_sensors_all`)
+        .get(`${process.env.VUE_APP_URL}/get_sensors_all`)
         .then((response) => {
           this.sensors = response.data;
           this.loading = false;
@@ -74,7 +74,7 @@ export default {
             sensor.transforms.forEach((transform) => {
               axios
                 .get(
-                  `${this.$store.state.host}/get_events_for_transform/${
+                  `${process.env.VUE_APP_URL}/get_events_for_transform/${
                     transform.id
                   }/1`,
                 )

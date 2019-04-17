@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --dest '../resources/sap'",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -12,8 +12,7 @@
     "lodash.clonedeep": "^4.5.0",
     "vue": "^2.5.21",
     "vue-router": "^3.0.1",
-    "vuetify": "^1.4.2",
-    "vuex": "^3.0.1"
+    "vuetify": "^1.4.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.3.0",

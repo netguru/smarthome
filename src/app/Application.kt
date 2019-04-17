@@ -11,15 +11,13 @@ import di.MainModule
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.application.log
+import io.ktor.features.AutoHeadResponse
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
-import io.ktor.http.content.default
-import io.ktor.http.content.file
-import io.ktor.http.content.files
-import io.ktor.http.content.static
+import io.ktor.http.content.*
 import io.ktor.routing.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -49,6 +47,8 @@ fun Application.module(testing: Boolean = false) {
         header(HttpHeaders.AccessControlAllowMethods)
     }
 
+    install(AutoHeadResponse)
+
     install(ContentNegotiation) {
         gson {
             setDateFormat(DateFormat.SHORT)
@@ -75,9 +75,8 @@ fun Application.module(testing: Boolean = false) {
         saveSettings(config)
 
         static("/") {
-            files("./frontend/dist")
-            file("./frontend/dist/favicon.ico", "favicon.ico")
-            default("./frontend/dist/index.html")
+            resources("sap")
+            defaultResource("sap/index.html")
         }
     }
 }

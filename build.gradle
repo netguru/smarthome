@@ -1,16 +1,21 @@
 buildscript {
     repositories {
         jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.moowork.gradle:gradle-node-plugin:1.3.1"
     }
 }
 
 apply plugin: 'kotlin'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'application'
+apply plugin: 'com.moowork.node'
 
 group 'smarthome'
 version '0.0.1'
@@ -52,3 +57,12 @@ dependencies {
 
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
 }
+
+node {
+    nodeModulesDir = file("${project.projectDir}/frontend")
+}
+
+task compileFrontEnd(type : YarnTask) {
+    args = ['build']
+}
+processResources.dependsOn(compileFrontEnd)

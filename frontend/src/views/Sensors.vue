@@ -86,7 +86,7 @@ export default {
       this.error = null;
       this.loading = true;
       axios
-        .get(`${this.$store.state.host}/get_sensors_all`)
+        .get(`${process.env.VUE_APP_URL}/get_sensors_all`)
         .then((response) => {
           this.loading = false;
           this.content = response.data;

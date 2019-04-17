@@ -97,7 +97,7 @@ export default {
     create() {
       axios
         .put(
-          `${this.$store.state.host}/add_sensor`,
+          `${process.env.}/add_sensor`,
           JSON.stringify(this.mSensor),
           {
             headers: {
@@ -115,7 +115,7 @@ export default {
     edit() {
       axios
         .patch(
-          `${this.$store.state.host}/modify_sensor/${this.mSensor.id}`,
+          `${process.env.VUE_APP_URL}/modify_sensor/${this.mSensor.id}`,
           JSON.stringify(this.mSensor),
           {
             headers: {
@@ -137,7 +137,7 @@ export default {
     removeClicked() {
       this.inProgress = true;
       axios
-        .delete(`${this.$store.state.host}/remove_sensor/${this.mSensor.id}`)
+        .delete(`${process.env.VUE_APP_URL}/remove_sensor/${this.mSensor.id}`)
         .then((response) => {
           this.inProgress = false;
           if (response.status === 200) {

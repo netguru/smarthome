@@ -77,7 +77,7 @@ export default {
             transformId: this.transform.id,
             data: value,
           };
-          axios.put(`${this.$store.state.host}/add_event`, JSON.stringify(event),
+          axios.put(`${process.env.VUE_APP_URL}/add_event`, JSON.stringify(event),
             {
               headers: {
                 "Content-Type": "application/json",
