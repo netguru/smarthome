@@ -8,3 +8,4 @@
 /ktor-server-*
 .DS_Store
 **/.vs
+/resources/sap

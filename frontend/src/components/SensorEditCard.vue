@@ -97,7 +97,7 @@ export default {
     create() {
       axios
         .put(
-          `${process.env.}/add_sensor`,
+          `${process.env.VUE_APP_URL}/add_sensor`,
           JSON.stringify(this.mSensor),
           {
             headers: {

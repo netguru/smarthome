@@ -73,6 +73,7 @@ fun Application.module(testing: Boolean = false) {
         addEvent(worker)
         modifySensor(db,worker)
         saveSettings(config)
+        getSettings(config)
 
         static("/") {
             resources("sap")
