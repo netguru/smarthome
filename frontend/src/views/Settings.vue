@@ -50,6 +50,9 @@ export default {
       }
     };
   },
+  created() {
+      this.getSettings();
+  },
   methods: {
     saveSettings() {
       axios
@@ -65,6 +68,18 @@ export default {
         .then(response => {
             console.log("saved. please restart server")
         });
+    },
+    getSettings(){
+        axios.get(`${process.env.VUE_APP_URL}/settings`)
+            .then( response => {
+                console.log(response);
+                this.$set(this.settings, "dbUrl", response.data.dbUrl);
+                this.$set(this.settings, "dbUser", response.data.dbUser);
+                this.$set(this.settings, "dbPass", response.data.dbPass);
+                this.$set(this.settings, "mqttUrl", response.data.mqttUrl);
+                this.$set(this.settings, "mqttUser", response.data.mqttUser);
+                this.$set(this.settings, "mqttPass", response.data.mqttPass);
+            })
     }
   }
 };
