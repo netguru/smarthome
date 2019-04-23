@@ -4,7 +4,6 @@ import com.netguru.db.TransformEntity
 
 data class AddSensorReq(
     val name: String,
-    val topic: String,
     val transforms: List<TransformReq>)
 
 data class TransformReq(
@@ -14,7 +13,8 @@ data class TransformReq(
     val returnType: String,
     val action: TransformAction,
     val icon: String?,
-    val writable: Boolean
+    val writable: Boolean,
+    val topic: String
 )
 
 enum class TransformAction {
@@ -24,7 +24,6 @@ enum class TransformAction {
 data class SensorResp(
     val id: Int,
     val name: String,
-    val topic: String,
     val transforms: List<TransformEntity>
 )
 

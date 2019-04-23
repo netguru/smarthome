@@ -11,12 +11,11 @@ import java.sql.ResultSet
 
 data class SensorEntity (
     val id: Int,
-    val name: String,
-    val topic: String
+    val name: String
 )
 
 interface SensorSql {
-    @Sql("INSERT INTO sensors (name, topic) VALUES (:name, :topic) RETURNING id")
+    @Sql("INSERT INTO sensors (name) VALUES (:name) RETURNING id")
     fun insertSensor(@BindBean sensor: AddSensorReq): Int
 
     @Sql("SELECT * FROM SENSORS ORDER BY id ASC")
@@ -28,18 +27,17 @@ interface SensorSql {
     @Sql("DELETE FROM SENSORS WHERE id = :id")
     fun removeSensor(@Bind("id") id: Int)
 
-    @Sql("UPDATE SENSORS SET (name, topic) = (:name, :topic) WHERE id=:id")
-    fun update(@Bind("id") id: Int, @Bind("name") name: String, @Bind("topic") topic: String)
+    @Sql("UPDATE SENSORS SET (name) = (:name) WHERE id=:id")
+    fun update(@Bind("id") id: Int, @Bind("name") name: String)
 }
 
 class SensorMapper : DbMapper<SensorEntity> {
     override fun map(r: ResultSet): SensorEntity {
         return SensorEntity(
             r.getInt("id"),
-            r.getString("name"),
-            r.getString("topic")
+            r.getString("name")
             )
     }
 }
 
-fun SensorEntity.toResp(transforms: List<TransformEntity>) = SensorResp(id, name, topic, transforms)
+fun SensorEntity.toResp(transforms: List<TransformEntity>) = SensorResp(id, name, transforms)

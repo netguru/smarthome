@@ -39,7 +39,7 @@ class Database(db: Db) {
         val sensorId = if(id == null){
             sensorSql.insertSensor(sensorData)
         } else {
-            sensorSql.update(id, sensorData.name, sensorData.topic)
+            sensorSql.update(id, sensorData.name)
             id
         }
 
@@ -59,7 +59,7 @@ class Database(db: Db) {
         if (addTransforms.isNotEmpty()) {
             return transformSql.insertBulk(
                 addTransforms.map {
-                    TransormInsertReq(sensorId, it.name, it.transform, it.returnType, it.icon, it.writable)
+                    TransormInsertReq(sensorId, it.name, it.transform, it.returnType, it.icon, it.writable, it.topic)
                 }
             )
         }
