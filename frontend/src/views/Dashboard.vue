@@ -1,8 +1,8 @@
 <template>
-  <v-layout align-content-start>
+  <v-layout align-content-start fill-height>
     <v-layout v-if="loading">Loading...</v-layout>
     <v-layout v-if="error">{{ error }}</v-layout>
-    <v-layout v-if="loading === false && error === null">
+    <v-layout v-if="loading === false && error === null" fill-height>
       <v-layout row wrap >
         <v-flex xs12 md3 v-for="sensor in sensors" v-bind:key="sensor.id">
           <v-card >

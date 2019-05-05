@@ -1,9 +1,16 @@
 <template>
   <v-layout column fill-height>
-    <v-flex>Settings</v-flex>
 
+    <v-layout>
+        <v-flex>Settings</v-flex>
+    </v-layout>
+
+
+<v-layout>
+        <v-flex>Database:</v-flex>
+    </v-layout>
     <v-layout row wrap>
-      Database:
+
       <v-flex>
         <v-text-field label="url" v-model="settings.dbUrl"></v-text-field>
       </v-flex>
@@ -15,8 +22,12 @@
       </v-flex>
     </v-layout>
 
+
+    <v-layout>
+        <v-flex>Mqtt Broker:</v-flex>
+    </v-layout>
     <v-layout row wrap>
-      Mqtt Broker:
+
       <v-flex>
         <v-text-field label="url" v-model="settings.mqttUrl"></v-text-field>
       </v-flex>
