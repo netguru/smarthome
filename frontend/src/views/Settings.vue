@@ -36,6 +36,7 @@
 </template>
 <script>
 import axios from "axios";
+
 export default {
   name: "Settings",
   data() {
@@ -46,12 +47,12 @@ export default {
         dbPass: "",
         mqttUrl: "",
         mqttUser: "",
-        mqttPass: ""
-      }
+        mqttPass: "",
+      },
     };
   },
   created() {
-      this.getSettings();
+    this.getSettings();
   },
   methods: {
     saveSettings() {
@@ -61,26 +62,26 @@ export default {
           JSON.stringify(this.settings),
           {
             headers: {
-              "Content-Type": "application/json"
-            }
-          }
+              "Content-Type": "application/json",
+            },
+          },
         )
-        .then(response => {
-            console.log("saved. please restart server")
+        .then((response) => {
+          console.log("saved. please restart server");
         });
     },
-    getSettings(){
-        axios.get(`${process.env.VUE_APP_URL}/settings`)
-            .then( response => {
-                console.log(response);
-                this.$set(this.settings, "dbUrl", response.data.dbUrl);
-                this.$set(this.settings, "dbUser", response.data.dbUser);
-                this.$set(this.settings, "dbPass", response.data.dbPass);
-                this.$set(this.settings, "mqttUrl", response.data.mqttUrl);
-                this.$set(this.settings, "mqttUser", response.data.mqttUser);
-                this.$set(this.settings, "mqttPass", response.data.mqttPass);
-            })
-    }
-  }
+    getSettings() {
+      axios.get(`${process.env.VUE_APP_URL}/settings`)
+        .then((response) => {
+          console.log(response);
+          this.$set(this.settings, "dbUrl", response.data.dbUrl);
+          this.$set(this.settings, "dbUser", response.data.dbUser);
+          this.$set(this.settings, "dbPass", response.data.dbPass);
+          this.$set(this.settings, "mqttUrl", response.data.mqttUrl);
+          this.$set(this.settings, "mqttUser", response.data.mqttUser);
+          this.$set(this.settings, "mqttPass", response.data.mqttPass);
+        });
+    },
+  },
 };
 </script>

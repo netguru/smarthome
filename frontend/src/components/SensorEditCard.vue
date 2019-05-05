@@ -3,7 +3,7 @@
     <v-progress-circular indeterminate color="primary" v-if="inProgress"></v-progress-circular>
     <v-card v-if="error">{{error}}</v-card>
 
-    <v-card height="100%"  v-if="!inProgress && !error">
+    <v-card height="100%" v-if="!inProgress && !error">
       <v-card-title class="dark" primary-title>{{title}}</v-card-title>
 
       <v-card-text class="grow">
@@ -11,30 +11,140 @@
           <v-container fluid grid-list-sm>
             <v-layout column>
               <v-layout row>
-                <v-flex xs12 md6>
+                <v-flex xs12 md12>
                   <v-text-field v-model="mSensor.name" label="Sensor name"/>
-                </v-flex>
-                <v-flex xs12 md6>
-                  <v-text-field v-model="mSensor.topic" label="Mqtt topic"/>
                 </v-flex>
               </v-layout>
 
               <v-layout row class="dark">
-                <v-flex>Transforms:</v-flex>
+                <v-flex>Characteristic:</v-flex>
                 <v-spacer></v-spacer>
                 <v-btn outline flat icon @click="addTransform()">
                   <v-icon>add</v-icon>
                 </v-btn>
               </v-layout>
 
-              <Transform
-                v-for="(transform, index) in mSensor.transforms"
-                :key="transform.id"
-                :transform="mSensor.transforms[index]"
-                @removeClicked="removeTransformClicked(index)"
-                @cancelUpdateClicked="cancelUpdateClicked(index)"
-                @update="updateTransform(index,$event)"
-              />
+              <v-layout row>
+                <v-flex md3>
+                  <v-list>
+                    <v-list-tile
+                      v-for="transform in mSensor.transforms"
+                      :key="transform.id"
+                      @click="onSelect(transform)"
+                    >
+                      <v-list-tile-content>
+                        <v-list-tile-title>#{{transform.id}} {{transform.name}}</v-list-tile-title>
+                      </v-list-tile-content>
+                    </v-list-tile>
+                  </v-list>
+                </v-flex>
+                <v-flex>
+                  <!-- CHARACTERISTIC EDIT -->
+                  <v-layout
+                    v-if="selected!==null"
+                    column
+                    class="margins"
+                    v-bind:class="selected.action"
+                  >
+                    <v-flex>
+                      <v-text-field
+                        v-model="selected.name"
+                        label="Name"
+                        :disabled="selected.action=='REMOVE'"
+                        @input="characteristicChanged()"
+                      />
+                    </v-flex>
+                    <v-flex>
+                      <v-text-field
+                        v-model="selected.topic"
+                        label="Topic"
+                        :disabled="selected.action=='REMOVE'"
+                        @input="characteristicChanged()"
+                      />
+                    </v-flex>
+                    <v-flex>
+                      <v-text-field
+                        v-model="selected.transform"
+                        label="JSON transform"
+                        :disabled="selected.action=='REMOVE'"
+                        @input="characteristicChanged()"
+                      />
+                    </v-flex>
+                    <v-flex>
+                      <v-select
+                        :items="items"
+                        v-model="selected.returnType"
+                        label="Return type"
+                        :disabled="selected.action=='REMOVE'"
+                        @input="characteristicChanged()"
+                      ></v-select>
+                    </v-flex>
+
+                    <v-layout row>
+                      <v-flex>
+                        <v-checkbox
+                          v-model="selected.writable"
+                          :disabled="selected.action=='REMOVE'"
+                          @change="characteristicChanged()"
+                          label="Writable"
+                        ></v-checkbox>
+                      </v-flex>
+                      <v-flex v-if="selected.icon">
+                        Icon:
+                        <v-img
+                          :src="getIcon()"
+                          @click="chooseIcon = !chooseIcon"
+                          aspect-ratio="1"
+                          width="70"
+                        />
+                      </v-flex>
+
+                      <v-btn flat fab v-if="!selected.icon" @click="chooseIcon = !chooseIcon">
+                        Icon: <v-icon>web_asset</v-icon>
+                      </v-btn>
+                      <v-btn flat icon v-if="selected.action!='REMOVE'">
+                        <v-icon color="red" @click="removeTransformClicked">delete</v-icon>
+                      </v-btn>
+                      <v-btn icon v-if="selected.action=='REMOVE' || selected.action=='UPDATE'">
+                        <v-icon @click="cancelUpdateClicked">close</v-icon>
+                      </v-btn>
+                    </v-layout>
+
+                    <v-dialog v-model="chooseIcon">
+                      <v-card>
+                        <v-card-title>Choose icon</v-card-title>
+                        <v-card-text>
+                          <v-layout row wrap v-if="selected.returnType==='BOOLEAN'">
+                            <v-img
+                              contain
+                              width="40"
+                              height="40"
+                              v-for="icon in booleanIcons"
+                              :key="icon"
+                              :src="getBooleanIcon(icon)"
+                              @click="selectIcon(icon)"
+                            />
+                          </v-layout>
+
+                          <v-layout row wrap v-else-if="selected.returnType==='INT'">
+                            <v-img
+                              contain
+                              width="40"
+                              height="40"
+                              v-for="icon in intIcons"
+                              :key="icon"
+                              :src="getIntIcon(icon)"
+                              @click="selectIcon(icon)"
+                            />
+                          </v-layout>
+                          <v-layout v-else>Choose Boolean or Int Return Type first.</v-layout>
+                        </v-card-text>
+                      </v-card>
+                    </v-dialog>
+                  </v-layout>
+                  <!-- CHARACTERISTIC EDIT -->
+                </v-flex>
+              </v-layout>
             </v-layout>
           </v-container>
         </v-form>
@@ -51,41 +161,83 @@
 <script>
 import clonedeep from "lodash.clonedeep";
 import axios from "axios";
-import Transform from "@/components/TransformEdit.vue";
 
 export default {
   name: "SensorEdit",
-  components: {
-    Transform,
-  },
   props: {
     title: String,
     deleteButton: Boolean,
     sensor: Object,
-    createNew: Boolean,
+    createNew: Boolean
   },
 
   watch: {
     sensor(value) {
       this.mSensor = clonedeep(value);
+      this.selected = null;
       if (!this.mSensor.transforms) {
         this.$set(this.mSensor, "transforms", []);
       }
-    },
+    }
   },
   data() {
     return {
       mSensor: clonedeep(this.sensor),
       inProgress: false,
       error: null,
+      selected: null,
+      selectedBackup: null,
+      items: ["BOOLEAN", "INT", "FLOAT", "STRING"],
+      chooseIcon: false,
+      booleanIcons: [
+        "contact",
+        "door",
+        "fire",
+        "frontdoor",
+        "garagedoor",
+        "heating",
+        "light",
+        "lock",
+        "network",
+        "poweroutlet",
+        "presence",
+        "receiver",
+        "screen",
+        "siren",
+        "switch",
+        "wallswitch",
+        "washingmachine",
+        "window"
+      ],
+
+      intIcons: [
+        "battery",
+        "blinds",
+        "cinemascreen",
+        "cistern",
+        "garagedoor",
+        "heating",
+        "humidity",
+        "light",
+        "qualityofservice",
+        "rollershutter",
+        "sewerage"
+      ]
     };
   },
   mounted() {
     if (!this.mSensor.transforms) {
       this.$set(this.mSensor, "transforms", []);
     }
+    for (let transform of this.mSensor.transforms) {
+      this.$set(transform, "action", "");
+    }
   },
   methods: {
+    onSelect(transform) {
+      this.selected = transform;
+      this.selectedBackup = clonedeep(transform)
+    },
     saveClicked() {
       this.inProgress = true;
       if (this.createNew) {
@@ -101,11 +253,11 @@ export default {
           JSON.stringify(this.mSensor),
           {
             headers: {
-              "Content-Type": "application/json",
-            },
-          },
+              "Content-Type": "application/json"
+            }
+          }
         )
-        .then((response) => {
+        .then(response => {
           this.inProgress = false;
           if (response.status === 201) {
             this.$emit("refresh");
@@ -119,26 +271,28 @@ export default {
           JSON.stringify(this.mSensor),
           {
             headers: {
-              "Content-Type": "application/json",
-            },
-          },
+              "Content-Type": "application/json"
+            }
+          }
         )
-        .then((response) => {
+        .then(response => {
           this.inProgress = false;
           if (response.status === 200) {
             this.$emit("refresh");
           }
         })
-        .catch((error) => {
+        .catch(error => {
           this.inProgress = false;
-          this.error = `${error.response.status} - ${error.response.statusText}`;
+          this.error = `${error.response.status} - ${
+            error.response.statusText
+          }`;
         });
     },
     removeClicked() {
       this.inProgress = true;
       axios
         .delete(`${process.env.VUE_APP_URL}/remove_sensor/${this.mSensor.id}`)
-        .then((response) => {
+        .then(response => {
           this.inProgress = false;
           if (response.status === 200) {
             this.$emit("refresh");
@@ -146,65 +300,64 @@ export default {
         });
     },
     // transfoorm methods:
-    removeTransformClicked(index) {
+    removeTransformClicked() {
       console.log("remove transform clicked");
-      if (this.mSensor.transforms[index].action === "ADD") {
+      if (this.selected.action === "ADD") {
         this.mSensor.transforms.splice(index, 1);
       } else {
-        this.$set(this.mSensor.transforms[index], "action", "REMOVE");
+        this.selected.action =  "REMOVE";
       }
     },
-    cancelUpdateClicked(index) {
-      const transform = this.mSensor.transforms[index];
+    cancelUpdateClicked() {
+      const transform = this.selected;
       console.log("cancelUpdateClicked clicked");
-      if (transform.action === "REMOVE") {
-        this.$set(transform, "action", "");
-      } else if (transform.action === "UPDATE") {
-        this.$set(transform, "action", "");
-      }
-      this.$set(transform, "name", this.sensor.transforms[index].name);
-      this.$set(
-        transform,
-        "transform",
-        this.sensor.transforms[index].transform,
-      );
-      this.$set(
-        transform,
-        "returnType",
-        this.sensor.transforms[index].returnType,
-      );
-      this.$set(
-        transform,
-        "icon",
-        this.sensor.transforms[index].icon,
-      );
-      let value;
-      if (this.sensor.transforms[index].writable) { value = true; } else { value = false; }
-      this.$set(
-        transform,
-        "writable",
-        value,
-      );
+      this.selected.action = "";
+      this.selected = clonedeep(this.selectedBackup);
     },
     addTransform() {
       this.mSensor.transforms.push({ action: "ADD" });
     },
-    updateTransform(index, event) {
-      this.$set(this.mSensor.transforms[index], "name", event.name);
-      this.$set(this.mSensor.transforms[index], "transform", event.transform);
-      this.$set(this.mSensor.transforms[index], "returnType", event.returnType);
-      this.$set(this.mSensor.transforms[index], "icon", event.icon);
-      this.$set(this.mSensor.transforms[index], "writable", event.writable);
-      if (this.mSensor.transforms[index].action !== "ADD") {
-        this.mSensor.transforms[index].action = "UPDATE";
+    characteristicChanged() {
+      if (this.selected.action != "ADD") {
+        this.selected.action = "UPDATE";
       }
     },
-  },
+    getBooleanIcon(name) {
+      return `icons/booleanIcons/${name}-true.png`;
+    },
+    getIntIcon(name) {
+      return `icons/intIcons/${name}-70.png`;
+    },
+    getIcon() {
+      switch (this.selected.returnType) {
+        case "BOOLEAN":
+          return this.getBooleanIcon(this.selected.icon);
+          break;
+        case "INT":
+          return this.getIntIcon(this.selected.icon);
+          break;
+      }
+    },
+    selectIcon(icon) {
+      this.selected.icon = icon;
+      this.chooseIcon = false;
+      this.characteristicChanged();
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>
 .flexcard {
   display: flex;
   flex-direction: column;
+}
+.REMOVE {
+  background: rgba(180, 0, 0, 0.2);
+}
+.ADD {
+  background: rgba(1, 180, 1, 0.2);
+}
+.UPDATE {
+  background: rgba(255, 166, 0, 0.2);
 }
 </style>

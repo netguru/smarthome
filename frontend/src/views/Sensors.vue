@@ -25,7 +25,7 @@
           <v-list>
             <v-list-tile v-for="item in content" :key="item.id" @click="onSelect(item)">
               <v-list-tile-content>
-                <v-list-tile-title>#{{item.id}} {{item.name}} ({{item.topic}})</v-list-tile-title>
+                <v-list-tile-title>#{{item.id}} {{item.name}}</v-list-tile-title>
               </v-list-tile-content>
             </v-list-tile>
           </v-list>
