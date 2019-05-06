@@ -29,4 +29,4 @@ The roadmap of the project contains:
  - scripts that install SSS as service on Raspberry Pi
 
 ## Contribution
-All contributions are welcome. Please contact me at pawel.bochenski@netguru.pl for futher details.
+All contributions are welcome. Please contact me at pawel.bochenski@netguru.pl for futher details or open issues with bugs and suggestions.
