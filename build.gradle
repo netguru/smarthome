@@ -62,7 +62,11 @@ node {
     nodeModulesDir = file("${project.projectDir}/frontend")
 }
 
+task installFrontentDeps(type: YarnTask){
+    args = ['install']
+}
 task compileFrontEnd(type : YarnTask) {
     args = ['build']
 }
+compileFrontEnd.dependsOn(installFrontentDeps)
 processResources.dependsOn(compileFrontEnd)
