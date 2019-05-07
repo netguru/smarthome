@@ -1,4 +1,4 @@
-# Simple Smarthome System
+# Simple Smarthome System [![Build Status](https://app.bitrise.io/app/81cc63d1690a1e94/status.svg?token=on4RMefgYNlBU7zLh4zEqQ&branch=master)](https://app.bitrise.io/app/81cc63d1690a1e94)
 ---
 Simple Smarthome System is smarthome monitoring software built with Kotlin, Ktor Server, PostgreSql and Vue.js. It monitors your mqtt broker of choise and shows your sensors status on screen.
 The idea behind the project is monitoring system that is not bloated with features, works on top of mqtt and all the settings are avilable in UI. The goal is to have system that easly integrates with Tasmota firmware and zigbee2mqtt devices.
