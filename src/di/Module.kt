@@ -2,12 +2,11 @@ package di
 
 import app.Server
 import com.github.mjdbc.DbFactory
-import com.netguru.db.Database
 import mqtt.MqttClient
 import mqtt.MqttWorker
-import com.netguru.db.*
 import com.uchuhimo.konf.Config
 import com.zaxxer.hikari.HikariDataSource
+import db.*
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient
 import org.koin.dsl.module.module
 
@@ -26,6 +25,7 @@ val DbModule = module {
             registerMapper(SensorEntity::class.java, SensorMapper())
             registerMapper(TransformEntity::class.java, TransformMapper())
             registerMapper(EventEntity::class.java, EventMapper())
+            registerMapper(Version::class.java, VersionMapper())
         }
     }
 }

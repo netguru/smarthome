@@ -2,9 +2,8 @@ package app
 
 
 import app.routes.*
-import com.netguru.db.Database
+import db.Database
 import com.uchuhimo.konf.Config
-import com.uchuhimo.konf.source.json.toJson
 import di.ConfigModule
 import di.DbModule
 import di.MainModule
@@ -24,7 +23,6 @@ import kotlinx.coroutines.launch
 import mqtt.MqttWorker
 import org.koin.ktor.ext.inject
 import org.koin.ktor.ext.installKoin
-import java.io.File
 import java.text.DateFormat
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient as PahoAsync
 
@@ -58,6 +56,8 @@ fun Application.module(testing: Boolean = false) {
     val db by inject<Database>()
     val worker by inject<MqttWorker>()
     val config by inject<Config>()
+
+    db.createTables()
 
     GlobalScope.launch {
         worker.connectAndRun()

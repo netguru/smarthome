@@ -5,7 +5,7 @@ import app.SensorResp
 import app.Server
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
-import com.netguru.db.Database
+import db.Database
 import com.uchuhimo.konf.Config
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope

@@ -1,6 +1,6 @@
 package app
 
-import com.netguru.db.TransformEntity
+import db.TransformEntity
 
 data class AddSensorReq(
     val name: String,

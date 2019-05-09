@@ -1,4 +1,4 @@
-package com.netguru.db
+package db
 
 import com.github.mjdbc.Bind
 import com.github.mjdbc.BindBean
@@ -22,6 +22,20 @@ interface TransformSql {
     @Sql("UPDATE TRANSFORMS SET (transform, return_type, name, icon, writable, topic) " +
             "= (:transform, :returnType, :name, :icon, :writable, :topic) WHERE id=:id")
     fun modify(@BindBean transforms: List<TransformReq>)
+
+
+    @Sql("CREATE TABLE transforms (" +
+            "id serial NOT NULL PRIMARY KEY, " +
+            "icon varchar NULL, " +
+            "name varchar NULL, " +
+            "return_type varchar NULL," +
+            "transform varchar NULL, " +
+            "sensor_id int NOT NULL, " +
+            "writable bool NOT NULL DEFAULT false, " +
+            "topic varchar NOT NULL, " +
+            "CONSTRAINT transforms_sensor_id_fkey FOREIGN KEY (sensor_id) REFERENCES sensors(id) ON DELETE CASCADE " +
+            ")")
+    fun create()
 }
 
 data class TransformEntity(

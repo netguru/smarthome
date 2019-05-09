@@ -1,4 +1,4 @@
-package com.netguru.db
+package db
 
 import com.github.mjdbc.Bind
 import com.github.mjdbc.DbMapper
@@ -37,6 +37,17 @@ interface EventSql {
 
     @Sql( "SELECT * FROM EVENTS WHERE transform_id=:id ORDER BY timestamp DESC LIMIT :limit")
     fun getForTransform(@Bind("id") transformId: Int, @Bind("limit") limit: Int): List<EventEntity>
+
+    @Sql("CREATE TABLE events ( " +
+            "id serial NOT NULL PRIMARY KEY, " +
+            "data varchar NOT NULL, " +
+            "timestamp timestamp NOT NULL, " +
+            "sensor_id int NOT NULL, " +
+            "transform_id int NOT NULL, " +
+            "CONSTRAINT events_sensor_id_fkey FOREIGN KEY (sensor_id) REFERENCES sensors(id) ON DELETE CASCADE, " +
+            "CONSTRAINT events_transform_id_fkey FOREIGN KEY (transform_id) REFERENCES transforms(id) ON DELETE CASCADE " +
+            ")")
+    fun create()
 
 }
 

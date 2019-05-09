@@ -2,7 +2,7 @@ package app.routes
 
 import app.AddSensorReq
 import mqtt.MqttWorker
-import com.netguru.db.Database
+import db.Database
 import io.ktor.application.call
 import io.ktor.request.receive
 import io.ktor.response.respond

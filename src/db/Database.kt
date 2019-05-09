@@ -1,24 +1,63 @@
-package com.netguru.db
+package db
 
 
-import com.github.mjdbc.Db
 import app.AddSensorReq
 import app.SensorResp
 import app.TransformAction
 import app.TransformReq
+import com.github.mjdbc.Db
+import com.github.mjdbc.DbPreparedStatement
+import mu.KotlinLogging
+import org.postgresql.util.PSQLException
 
+private val logger = KotlinLogging.logger {}
 
-class Database(db: Db) {
+class Database(private val db: Db) {
+
 
     private val sensorSql = db.attachSql(SensorSql::class.java)
     private val transformSql = db.attachSql(TransformSql::class.java)
     private val eventSql = db.attachSql(EventSql::class.java)
+    private val versionSql = db.attachSql(VersionSql::class.java)
 
+    private val currentVersion = 1
     fun createTables() {
-        //TODO:
-        // 1. check if table version exists
-        // 2. check if table version row is lower than hardcoded
-        // 3. update db according to migration functions
+
+        val versionExists =
+            db.execute { c ->
+                val statement = DbPreparedStatement<Boolean>(c,
+                    "SELECT EXISTS ( "+
+                        "   SELECT 1 " +
+                        "   FROM   pg_tables " +
+                        "   WHERE  schemaname = 'public'" +
+                        "   AND    tablename = 'version'" +
+                        "   )")
+
+                val result = statement.executeQuery()
+                result.next()
+                result.getBoolean("exists")
+            }
+
+        val version = if(versionExists == null || !versionExists) {
+            logger.debug { "TABLE VERSION DOES NOT EXITS, RECREATING" }
+            versionSql.create()
+            versionSql.insert(Version(currentVersion))
+            sensorSql.create()
+            transformSql.create()
+            eventSql.create()
+            currentVersion
+        } else {
+            versionSql.getVersion().version
+        }
+        logger.debug { "Database version = $version" }
+
+        if (version < currentVersion) {
+            updateTables(version, currentVersion)
+        }
+    }
+
+    private fun updateTables(version: Int, newVersion: Int) {
+        //implement this when db changes
     }
 
     //TODO: refactor to do select join transforms
@@ -36,7 +75,7 @@ class Database(db: Db) {
     }
 
     fun modifySensor(id: Int?, sensorData: AddSensorReq): SensorResp {
-        val sensorId = if(id == null){
+        val sensorId = if (id == null) {
             sensorSql.insertSensor(sensorData)
         } else {
             sensorSql.update(id, sensorData.name)
@@ -76,9 +115,9 @@ class Database(db: Db) {
 
     private fun modifyTransforms(transforms: List<TransformReq>) {
         val toModify = transforms
-            .filter { it.action == TransformAction.UPDATE && it.id != null}
+            .filter { it.action == TransformAction.UPDATE && it.id != null }
 
-        if( toModify.isNotEmpty()) {
+        if (toModify.isNotEmpty()) {
             transformSql.modify(toModify)
         }
     }
@@ -88,7 +127,7 @@ class Database(db: Db) {
     }
 
     fun getEventsForTransform(transformId: Int, limit: Int): List<EventEntity> {
-        return eventSql.getForTransform(transformId,limit)
+        return eventSql.getForTransform(transformId, limit)
     }
 
 }
