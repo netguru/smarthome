@@ -13,7 +13,6 @@
                   <TransformView
                     :transform="transform"
                     :icon="typeof transform.icon  !== 'undefined'"
-                    v-on:refresh="fetchData()"
                     v-on:showDialog="showDialog($event)"
                   />
                 </v-flex>
