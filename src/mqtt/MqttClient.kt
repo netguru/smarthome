@@ -38,6 +38,7 @@ class MqttClient(private val client: PahoClient) {
     }
 
     suspend fun publish(topic: String, message: String) = suspendCancellableCoroutine<Unit> {
+        logger.debug { "publishing to $topic value= $message" }
         client.publish(topic, MqttMessage(message.toByteArray()), null, object : IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken?) {
                 if(asyncActionToken != null && asyncActionToken.isComplete){

@@ -80,15 +80,41 @@
                       ></v-select>
                     </v-flex>
 
-                    <v-layout row>
-                      <v-flex>
+                    <v-flex v-if="selected.returnType === 'BOOLEAN'">
+                        <v-layout row>
+                            <v-text-field
+                                v-model="selected.boolOn"
+                                label="On state label"
+                                :disabled="selected.action=='REMOVE'"
+                                @input="characteristicChanged()"
+                            />
+                            <v-text-field
+                                v-model="selected.boolOff"
+                                label="Off state label"
+                                :disabled="selected.action=='REMOVE'"
+                                @input="characteristicChanged()"
+                            />
+                        </v-layout>
+                    </v-flex>
+                    <v-flex>
                         <v-checkbox
                           v-model="selected.writable"
                           :disabled="selected.action=='REMOVE'"
-                          @change="characteristicChanged()"
+                          @change="writableClicked()"
                           label="Writable"
                         ></v-checkbox>
-                      </v-flex>
+                    </v-flex>
+
+                    <v-flex v-if="selected.writable">
+                        <v-text-field
+                                v-model="selected.cmdTopic"
+                                label="Write command topic"
+                                :disabled="selected.action=='REMOVE'"
+                                @input="characteristicChanged()"
+                            />
+                    </v-flex>
+                    <v-layout row>
+
                       <v-flex v-if="selected.icon">
                         Icon:
                         <v-img
@@ -168,7 +194,7 @@ export default {
     title: String,
     deleteButton: Boolean,
     sensor: Object,
-    createNew: Boolean
+    createNew: Boolean,
   },
 
   watch: {
@@ -178,7 +204,7 @@ export default {
       if (!this.mSensor.transforms) {
         this.$set(this.mSensor, "transforms", []);
       }
-    }
+    },
   },
   data() {
     return {
@@ -207,7 +233,7 @@ export default {
         "switch",
         "wallswitch",
         "washingmachine",
-        "window"
+        "window",
       ],
 
       intIcons: [
@@ -221,22 +247,22 @@ export default {
         "light",
         "qualityofservice",
         "rollershutter",
-        "sewerage"
-      ]
+        "sewerage",
+      ],
     };
   },
   mounted() {
     if (!this.mSensor.transforms) {
       this.$set(this.mSensor, "transforms", []);
     }
-    for (let transform of this.mSensor.transforms) {
+    for (const transform of this.mSensor.transforms) {
       this.$set(transform, "action", "");
     }
   },
   methods: {
     onSelect(transform) {
       this.selected = transform;
-      this.selectedBackup = clonedeep(transform)
+      this.selectedBackup = clonedeep(transform);
     },
     saveClicked() {
       this.inProgress = true;
@@ -253,11 +279,11 @@ export default {
           JSON.stringify(this.mSensor),
           {
             headers: {
-              "Content-Type": "application/json"
-            }
-          }
+              "Content-Type": "application/json",
+            },
+          },
         )
-        .then(response => {
+        .then((response) => {
           this.inProgress = false;
           if (response.status === 201) {
             this.$emit("refresh");
@@ -271,17 +297,17 @@ export default {
           JSON.stringify(this.mSensor),
           {
             headers: {
-              "Content-Type": "application/json"
-            }
-          }
+              "Content-Type": "application/json",
+            },
+          },
         )
-        .then(response => {
+        .then((response) => {
           this.inProgress = false;
           if (response.status === 200) {
             this.$emit("refresh");
           }
         })
-        .catch(error => {
+        .catch((error) => {
           this.inProgress = false;
           this.error = `${error.response.status} - ${
             error.response.statusText
@@ -292,7 +318,7 @@ export default {
       this.inProgress = true;
       axios
         .delete(`${process.env.VUE_APP_URL}/remove_sensor/${this.mSensor.id}`)
-        .then(response => {
+        .then((response) => {
           this.inProgress = false;
           if (response.status === 200) {
             this.$emit("refresh");
@@ -305,7 +331,7 @@ export default {
       if (this.selected.action === "ADD") {
         this.mSensor.transforms.splice(index, 1);
       } else {
-        this.selected.action =  "REMOVE";
+        this.selected.action = "REMOVE";
       }
     },
     cancelUpdateClicked() {
@@ -321,6 +347,12 @@ export default {
       if (this.selected.action != "ADD") {
         this.selected.action = "UPDATE";
       }
+    },
+    writableClicked(){
+        if(this.selected.writable === false){
+            this.selected.cmdTopic = null;
+        }
+        this.characteristicChanged();
     },
     getBooleanIcon(name) {
       return `icons/booleanIcons/${name}-true.png`;
@@ -342,8 +374,8 @@ export default {
       this.selected.icon = icon;
       this.chooseIcon = false;
       this.characteristicChanged();
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

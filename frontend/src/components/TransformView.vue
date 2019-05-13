@@ -58,50 +58,52 @@ export default {
       return typeof item !== "undefined";
     },
     clicked() {
-      switch (this.transform.returnType) {
-        case "BOOLEAN": {
-          console.log("BOOLEAN");
-          let value = this.transform.event.data;
-          if (this.notUndef(value)) {
-            if (value.toLowerCase() === "true") {
-              value = "false";
+      if(this.transform.writable){
+        switch (this.transform.returnType) {
+            case "BOOLEAN": {
+            console.log("BOOLEAN");
+            let value = this.transform.event.data;
+            if (this.notUndef(value)) {
+                if (value.toLowerCase() === "true") {
+                value = "false";
+                } else {
+                value = "true";
+                }
             } else {
-              value = "true";
+                value = "false";
             }
-          } else {
-            value = "false";
-          }
-          const field = this.transform.transform.split(".").slice(-1)[0];
-          const event = {
-            sensorId: this.transform.sensorId,
-            transformId: this.transform.id,
-            data: value,
-          };
-          axios.put(`${process.env.VUE_APP_URL}/add_event`, JSON.stringify(event),
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            })
-            .then((response) => {
-              setTimeout(() => {
-                this.$emit("refresh");
-              }, 3000);
-            });
-          break;
-        }
-        case "INT": {
-          console.log("INT");
-          this.$emit("showDialog", this.transform);
-          break;
-        }
-        case "FLOAT": {
-          console.log("FLOAT");
-          break;
-        }
-        case "STRING": {
-          console.log("STRING");
-          break;
+            const field = this.transform.transform.split(".").slice(-1)[0];
+            const event = {
+                sensorId: this.transform.sensorId,
+                transformId: this.transform.id,
+                data: value,
+            };
+            axios.put(`${process.env.VUE_APP_URL}/add_event`, JSON.stringify(event),
+                {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                })
+                .then((response) => {
+                    setTimeout(() => {
+                        this.$emit("refresh");
+                    }, 1500);
+                });
+            break;
+            }
+            case "INT": {
+            console.log("INT");
+            this.$emit("showDialog", this.transform);
+            break;
+            }
+            case "FLOAT": {
+            console.log("FLOAT");
+            break;
+            }
+            case "STRING": {
+            console.log("STRING");
+            break;
+            }
         }
       }
     },

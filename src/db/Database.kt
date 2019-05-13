@@ -98,7 +98,19 @@ class Database(private val db: Db) {
         if (addTransforms.isNotEmpty()) {
             return transformSql.insertBulk(
                 addTransforms.map {
-                    TransormInsertReq(sensorId, it.name, it.transform, it.returnType, it.icon, it.writable, it.topic)
+                    TransformReq(
+                        null,
+                        sensorId,
+                        it.name,
+                        it.transform,
+                        it.returnType,
+                        TransformAction.ADD,
+                        it.icon,
+                        it.writable,
+                        it.topic,
+                        it.boolTrue,
+                        it.boolFalse,
+                        it.cmdTopic)
                 }
             )
         }
