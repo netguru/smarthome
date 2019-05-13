@@ -53,14 +53,15 @@ export default {
       timer: "",
       intDialogShow: false,
       dialogTransform: null,
+      socket: null,
     };
   },
   created() {
-    this.timer = setInterval(this.fetchData, 1000 * 30);
+    this.connect();
     this.fetchData();
   },
   destroyed() {
-    clearInterval(this.timer);
+    this.disconnect();
   },
   methods: {
     fetchData() {
@@ -88,6 +89,19 @@ export default {
           this.loading = false;
           this.error = err.toString();
         });
+    },
+    connect() {
+      this.socket = new WebSocket("ws://localhost:8080/ws");
+      this.socket.onopen = () => {
+        this.socket.onmessage = ({data}) => {
+          if(data === "REFRESH"){
+            this.fetchData()
+          }
+        };
+      };
+    },
+    disconnect() {
+      this.socket.close();
     },
     showDialog(dialogType) {
       this.dialogTransform = dialogType;

@@ -1,6 +1,7 @@
 package di
 
 import app.Server
+import app.WebsocketServer
 import com.github.mjdbc.DbFactory
 import mqtt.MqttClient
 import mqtt.MqttWorker
@@ -36,7 +37,8 @@ val MainModule = module {
         MqttClient(MqttAsyncClient(config[Server.mqttUrl], "ktor-server"))
     }
     single { Database(get()) }
-    single { MqttWorker(get(), get(), get()) }
+    single { MqttWorker(get(), get(), get(), get()) }
+    single { WebsocketServer() }
 }
 
 val ConfigModule = module {

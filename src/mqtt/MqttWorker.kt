@@ -3,6 +3,8 @@ package mqtt
 import app.EventReq
 import app.SensorResp
 import app.Server
+import app.WebsocketServer
+import app.WebsocketServer.Companion.REFRESH_MESSAGE
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import db.Database
@@ -17,7 +19,8 @@ private val logger = KotlinLogging.logger {}
 class MqttWorker(
     private val mqttClient: MqttClient,
     private val db: Database,
-    private val config: Config
+    private val config: Config,
+    private val websocketServer: WebsocketServer
 ) {
 
     private sealed class WorkerCmd {
@@ -98,7 +101,6 @@ class MqttWorker(
         logger.debug { "publishing to ${sensor.name} value: $json" }
         val topic = transform.cmdTopic ?: transform.topic
         mqttClient.publish(topic, json)
-        //TODO: add posting event to refresh using websocket
     }
 
     private suspend fun unsubscribeAction(command: WorkerCmd.Unsubscribe) = coroutineScope {
@@ -130,17 +132,15 @@ class MqttWorker(
                                 data,
                                 it.id
                             )
+
+                            websocketServer.broadcast(REFRESH_MESSAGE)
                         }
                     }
-
-                    //TODO: add posting event to refresh using websocket
                 }
+                logger.debug { "closing coroutine for ${command.sensor.id} topic: ${command.sensor.name}" }
             }
         }
-        for (message in mqttClient.subscribe(command.sensor.name)) {
 
-        }
-        logger.debug { "closing coroutine for ${command.sensor.id} topic: ${command.sensor.name}" }
     }
 
     private fun transform(
