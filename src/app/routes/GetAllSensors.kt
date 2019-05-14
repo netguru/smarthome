@@ -1,6 +1,6 @@
 package app.routes
 
-import com.netguru.db.Database
+import db.Database
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route

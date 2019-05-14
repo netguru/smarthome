@@ -3,9 +3,11 @@ package mqtt
 import app.EventReq
 import app.SensorResp
 import app.Server
+import app.WebsocketServer
+import app.WebsocketServer.Companion.REFRESH_MESSAGE
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
-import com.netguru.db.Database
+import db.Database
 import com.uchuhimo.konf.Config
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
@@ -17,7 +19,8 @@ private val logger = KotlinLogging.logger {}
 class MqttWorker(
     private val mqttClient: MqttClient,
     private val db: Database,
-    private val config: Config
+    private val config: Config,
+    private val websocketServer: WebsocketServer
 ) {
 
     private sealed class WorkerCmd {
@@ -81,14 +84,23 @@ class MqttWorker(
             .split(".")
             .last()
 
-        val json = if (transform.returnType == "STRING") {
-            "{\"$field\": \"${command.event.data}\" }"
-        } else {
-            "{\"$field\": ${command.event.data} }"
+        val json = when (transform.returnType) {
+            "BOOLEAN" -> {
+                val onValue = transform.boolOn ?: "true"
+                val offValue = transform.boolOff ?: "false"
+                if(command.event.data == "true"){
+                    onValue
+                } else {
+                    offValue
+                }
+            }
+            "STRING" -> "{\"$field\": \"${command.event.data}\" }"
+
+            else -> "{\"$field\": ${command.event.data} }"
         }
         logger.debug { "publishing to ${sensor.name} value: $json" }
-        mqttClient.publish(transform.topic, json)
-        //TODO: add posting event to refresh using websocket
+        val topic = transform.cmdTopic ?: transform.topic
+        mqttClient.publish(topic, json)
     }
 
     private suspend fun unsubscribeAction(command: WorkerCmd.Unsubscribe) = coroutineScope {
@@ -110,7 +122,7 @@ class MqttWorker(
 
                     command.sensor.transforms.filter { it.topic == topic }.forEach {
                         val data = try {
-                            transform(message, it.transform, it.returnType)
+                            transform(message, it.transform, it.returnType, it.boolOn, it.boolOff)
                         } catch (e: PathNotFoundException) {
                             null
                         }
@@ -120,22 +132,37 @@ class MqttWorker(
                                 data,
                                 it.id
                             )
+
+                            websocketServer.broadcast(REFRESH_MESSAGE)
                         }
                     }
-
-                    //TODO: add posting event to refresh using websocket
                 }
+                logger.debug { "closing coroutine for ${command.sensor.id} topic: ${command.sensor.name}" }
             }
         }
-        for (message in mqttClient.subscribe(command.sensor.name)) {
 
-        }
-        logger.debug { "closing coroutine for ${command.sensor.id} topic: ${command.sensor.name}" }
     }
 
-    private fun transform(data: String, pattern: String, returnType: String): String {
+    private fun transform(
+        data: String,
+        pattern: String,
+        returnType: String,
+        boolOn: String?,
+        boolOff: String?
+    ): String {
         return when (returnType) {
-            "BOOLEAN" -> JsonPath.parse(data).read<Boolean>(pattern).toString()
+            "BOOLEAN" -> {
+                if(boolOn!= null && boolOff != null){
+                    when(JsonPath.parse(data).read<String>(pattern)){
+                        boolOn -> "true"
+                        boolOff -> "false"
+                        else -> "false"
+                    }
+                } else {
+                    JsonPath.parse(data).read<Boolean>(pattern).toString()
+                }
+
+            }
             "STRING" -> JsonPath.parse(data).read<String>(pattern).toString()
             "INT" -> JsonPath.parse(data).read<Int>(pattern).toString()
             "FLOAT" -> JsonPath.parse(data).read<Float>(pattern).toString()

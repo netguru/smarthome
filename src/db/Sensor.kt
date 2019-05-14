@@ -1,4 +1,4 @@
-package com.netguru.db
+package db
 
 import com.github.mjdbc.Bind
 import com.github.mjdbc.BindBean
@@ -29,6 +29,12 @@ interface SensorSql {
 
     @Sql("UPDATE SENSORS SET (name) = (:name) WHERE id=:id")
     fun update(@Bind("id") id: Int, @Bind("name") name: String)
+
+    @Sql("CREATE TABLE sensors ( " +
+            "id serial NOT NULL PRIMARY KEY, " +
+            "name varchar NULL " +
+            ")")
+    fun create()
 }
 
 class SensorMapper : DbMapper<SensorEntity> {

@@ -1,6 +1,6 @@
 package app
 
-import com.netguru.db.TransformEntity
+import db.TransformEntity
 
 data class AddSensorReq(
     val name: String,
@@ -8,13 +8,17 @@ data class AddSensorReq(
 
 data class TransformReq(
     val id: Int?,
+    val sensorId: Int,
     val name: String?,
     val transform: String,
     val returnType: String,
     val action: TransformAction,
     val icon: String?,
     val writable: Boolean,
-    val topic: String
+    val topic: String,
+    val boolTrue: String?,
+    val boolFalse: String?,
+    val cmdTopic: String?
 )
 
 enum class TransformAction {

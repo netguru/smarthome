@@ -1,7 +1,7 @@
 package app.routes
 
 import mqtt.MqttWorker
-import com.netguru.db.Database
+import db.Database
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond

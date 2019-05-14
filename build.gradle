@@ -18,7 +18,7 @@ apply plugin: 'application'
 apply plugin: 'com.moowork.node'
 
 group 'smarthome'
-version '0.0.1'
+version '0.0.2'
 mainClassName = "io.ktor.server.netty.EngineMain"
 
 sourceSets {
@@ -41,6 +41,7 @@ dependencies {
     compile "ch.qos.logback:logback-classic:$logback_version"
     compile "io.ktor:ktor-server-core:$ktor_version"
     compile "io.ktor:ktor-gson:$ktor_version"
+    compile "io.ktor:ktor-websockets:$ktor_version"
     compile "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0"
     compile 'com.jayway.jsonpath:json-path:2.4.0'
     compile 'io.github.microutils:kotlin-logging:1.6.24'
