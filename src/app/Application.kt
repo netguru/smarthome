@@ -23,8 +23,8 @@ import io.ktor.websocket.WebSockets
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mqtt.MqttWorker
+import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
-import org.koin.ktor.ext.installKoin
 import java.text.DateFormat
 import java.time.Duration
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient as PahoAsync
@@ -37,7 +37,9 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
 
-    installKoin(listOf(ConfigModule, DbModule, MainModule))
+    install(Koin){
+        modules(listOf(ConfigModule, DbModule, MainModule))
+    }
 
     install(CORS) {
         anyHost()

@@ -9,7 +9,8 @@ import com.uchuhimo.konf.Config
 import com.zaxxer.hikari.HikariDataSource
 import db.*
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient
-import org.koin.dsl.module.module
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
 
 val DbModule = module {
@@ -45,9 +46,9 @@ val ConfigModule = module {
     single {
         Config { addSpec(Server) }
             .from.json.resource("config.json")
-            .from.json.file(get<String>("defaultConfigPath"))
+            .from.json.file(get<String>(named("defaultConfigPath")))
             .from.env()
     }
 
-    single("defaultConfigPath") { "./config.json" }
+    single(named("defaultConfigPath")) { "./config.json" }
 }

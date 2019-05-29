@@ -90,7 +90,7 @@ export default {
         });
     },
     connect() {
-      this.socket = new WebSocket("ws://localhost:8080/ws");
+      this.socket = new WebSocket(`//${window.location.host}`);
       this.socket.onopen = () => {
         this.socket.onmessage = ({data}) => {
           if(data === "REFRESH"){
