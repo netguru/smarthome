@@ -1,0 +1,10 @@
+{
+    "server": {
+      "mqttUrl": "",
+      "mqttUser": "",
+      "mqttPass": "",
+      "dbUrl": "",
+      "dbUser": "",
+      "dbPass": ""
+    }
+  }
