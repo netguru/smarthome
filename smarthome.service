@@ -1,0 +1,14 @@
+[Unit]
+Description=Smarthome
+After=network.target
+
+[Service]
+ExecStart=/home/pi/smarthome-0.0.3/bin/smarthome
+WorkingDirectory=/home/pi/smarthome-0.0.3/bin/
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

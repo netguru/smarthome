@@ -18,7 +18,7 @@ apply plugin: 'application'
 apply plugin: 'com.moowork.node'
 
 group 'smarthome'
-version '0.0.2'
+version '0.0.3'
 mainClassName = "io.ktor.server.netty.EngineMain"
 
 sourceSets {
@@ -26,6 +26,13 @@ sourceSets {
     test.kotlin.srcDirs = test.java.srcDirs = ['test']
     main.resources.srcDirs = ['resources']
     test.resources.srcDirs = ['testresources']
+}
+
+distZip {
+    into("$project.name-$project.version/bin") {
+        from '.'
+        include 'smarthome.service', 'config.json'
+    }
 }
 
 repositories {
@@ -52,7 +59,7 @@ dependencies {
 
     compile "org.koin:koin-core:1.0.2"
     compile "org.koin:koin-core-ext:1.0.2"
-    compile "org.koin:koin-ktor:1.0.2"
+    compile 'org.koin:koin-ktor:2.0.1'
 
     compile 'com.uchuhimo:konf:0.13.2'
 

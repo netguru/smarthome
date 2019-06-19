@@ -8,15 +8,33 @@ The idea behind the project is monitoring system that is not bloated with featur
 2. install PostgreSql
 3. download SSS binaries from release page
 4. extract archive
-5. create empty file `config.json` in bin folder
 6. run SSS
-    ```
-    ./smarthome
-    ```
+```
+./smarthome
+```
 7. open http://0.0.0.0:8080/#/settings and fill up your credentials for PostgreSql and mqtt broker
 8. restart server
 9. configure sensors at http://0.0.0.0:8080/#/sensors
 10. your dashboard is ready at http://0.0.0.0:8080/#/
+
+
+## Running SSS as a service on Raspberry Pi
+1. open file `bin/smarthome.service` 
+2. change paths for `ExecStart` and `WorkingDirectory` depending on where you have exctracted distribution zip.
+3. copy `smarthome.service` file to systemd dir  
+```bash
+sudo cp bin/smarthome.service /etc/systemd/system/smarthome.service
+```
+    
+4. run the service: 
+```bash
+sudo systemctl start smarthome.service
+```
+5. if you want to read logfile of the service you can run:
+```bash
+sudo journalctl -u smarthome.service -f -b
+```
+
 
 ## Roadmap
 System is in its early stages so it contains bugs and some features are missig.
