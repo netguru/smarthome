@@ -8,7 +8,7 @@ object Server: ConfigSpec() {
         val mqttUser by optional("")
         val mqttPass by optional("")
 
-        val dbUrl by optional("localhost")
+        val dbUrl by optional("localhost/")
         val dbUser by optional("")
         val dbPass by optional("")
 }
