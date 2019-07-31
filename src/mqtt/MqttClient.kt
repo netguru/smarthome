@@ -1,27 +1,27 @@
 package mqtt
 
+import app.Server
+import com.uchuhimo.konf.Config
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.suspendCancellableCoroutine
 import mu.KotlinLogging
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttToken
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions
-import org.eclipse.paho.client.mqttv3.MqttMessage
+import org.eclipse.paho.client.mqttv3.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient as PahoClient
 
 private val logger = KotlinLogging.logger {}
 
-class MqttClient(private val client: PahoClient) {
+class MqttClient(private val config: Config) {
 
     private val channelsMap = HashMap<String, Channel<String>>()
-
-    fun isConnected() = client.isConnected
+    var client: PahoClient? = null
+    fun isConnected() = client?.isConnected ?: false
 
     suspend fun connect(user: String, pass: String) = suspendCancellableCoroutine<Unit> {
         logger.debug { "connecting user: $user" }
-        client.connect(MqttConnectOptions().apply {
+        client = MqttAsyncClient(config[Server.mqttUrl], "ktor-server")
+        client?.connect(MqttConnectOptions().apply {
             userName = user
             password = pass.toCharArray()
         }, null, object : IMqttActionListener {
@@ -39,7 +39,7 @@ class MqttClient(private val client: PahoClient) {
 
     suspend fun publish(topic: String, message: String) = suspendCancellableCoroutine<Unit> {
         logger.debug { "publishing to $topic value= $message" }
-        client.publish(topic, MqttMessage(message.toByteArray()), null, object : IMqttActionListener {
+        client?.publish(topic, MqttMessage(message.toByteArray()), null, object : IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken?) {
                 if(asyncActionToken != null && asyncActionToken.isComplete){
                     it.resume(Unit)
@@ -62,7 +62,7 @@ class MqttClient(private val client: PahoClient) {
 
     suspend fun subscribe(topic: String)  = suspendCancellableCoroutine<Channel<String>> {
 
-        client.subscribe(topic,0, null, object : IMqttActionListener {
+        client?.subscribe(topic,0, null, object : IMqttActionListener {
             override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable) {
                 logger.debug { "failed subcription to $topic with $exception" }
                 channelsMap[topic]?.close()
@@ -82,7 +82,7 @@ class MqttClient(private val client: PahoClient) {
     suspend fun unsubscribe(topic: String) = suspendCancellableCoroutine<Unit> {
         channelsMap[topic]?.close()
         channelsMap.remove(topic)
-        client.unsubscribe(topic, null, object: IMqttActionListener {
+        client?.unsubscribe(topic, null, object: IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken?) {
                 it.resume(Unit)
             }
@@ -96,7 +96,7 @@ class MqttClient(private val client: PahoClient) {
     suspend fun disconnect() = suspendCancellableCoroutine<Unit>{
         channelsMap.forEach { channel ->  channel.value.close() }
         channelsMap.clear()
-        client.disconnect(null, object : IMqttActionListener {
+        client?.disconnect(null, object : IMqttActionListener {
             override fun onSuccess(asyncActionToken: IMqttToken?) {
                 it.resume(Unit)
             }

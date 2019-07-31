@@ -76,31 +76,33 @@ class MqttWorker(
     }
 
     private suspend fun postEventAction(command: WorkerCmd.PostEvent) = coroutineScope {
-        val sensor = db.getSensor(command.event.sensorId)
+        if(db.isConnected()) {
+            val sensor = db.getSensor(command.event.sensorId)
 
-        val transform = sensor.transforms.first { it.id == command.event.transformId }
+            val transform = sensor.transforms.first { it.id == command.event.transformId }
 
-        val field = transform.transform
-            .split(".")
-            .last()
+            val field = transform.transform
+                .split(".")
+                .last()
 
-        val json = when (transform.returnType) {
-            "BOOLEAN" -> {
-                val onValue = transform.boolOn ?: "true"
-                val offValue = transform.boolOff ?: "false"
-                if(command.event.data == "true"){
-                    onValue
-                } else {
-                    offValue
+            val json = when (transform.returnType) {
+                "BOOLEAN" -> {
+                    val onValue = transform.boolOn ?: "true"
+                    val offValue = transform.boolOff ?: "false"
+                    if (command.event.data == "true") {
+                        onValue
+                    } else {
+                        offValue
+                    }
                 }
-            }
-            "STRING" -> "{\"$field\": \"${command.event.data}\" }"
+                "STRING" -> "{\"$field\": \"${command.event.data}\" }"
 
-            else -> "{\"$field\": ${command.event.data} }"
+                else -> "{\"$field\": ${command.event.data} }"
+            }
+            logger.debug { "publishing to ${sensor.name} value: $json" }
+            val topic = transform.cmdTopic ?: transform.topic
+            mqttClient.publish(topic, json)
         }
-        logger.debug { "publishing to ${sensor.name} value: $json" }
-        val topic = transform.cmdTopic ?: transform.topic
-        mqttClient.publish(topic, json)
     }
 
     private suspend fun unsubscribeAction(command: WorkerCmd.Unsubscribe) = coroutineScope {

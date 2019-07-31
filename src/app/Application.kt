@@ -1,11 +1,9 @@
 package app
 
-
 import app.routes.*
-import db.Database
 import com.uchuhimo.konf.Config
+import db.Database
 import di.ConfigModule
-import di.DbModule
 import di.MainModule
 import io.ktor.application.*
 import io.ktor.features.AutoHeadResponse
@@ -14,8 +12,10 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
-import io.ktor.http.content.*
-import io.ktor.routing.*
+import io.ktor.http.content.defaultResource
+import io.ktor.http.content.resources
+import io.ktor.http.content.static
+import io.ktor.routing.routing
 import io.ktor.sessions.*
 import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.generateNonce
@@ -37,8 +37,8 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
 
-    install(Koin){
-        modules(listOf(ConfigModule, DbModule, MainModule))
+    install(Koin) {
+        modules(listOf(ConfigModule, MainModule))
     }
 
     install(CORS) {
@@ -80,7 +80,15 @@ fun Application.module(testing: Boolean = false) {
     val config by inject<Config>()
     val websocketServer by inject<WebsocketServer>()
 
-    db.createTables()
+    db.connect(config)
+    if (db.isConnected()) {
+       try {
+           db.createTables()
+       } catch (e :Exception){
+           log.debug("Could not create tables because of $e")
+       }
+    }
+
 
     GlobalScope.launch {
         worker.connectAndRun()
@@ -94,7 +102,7 @@ fun Application.module(testing: Boolean = false) {
         removeSensor(db, worker)
         getEventsForTransform(db)
         addEvent(worker)
-        modifySensor(db,worker)
+        modifySensor(db, worker)
         saveSettings(config)
         getSettings(config)
         websocketServerSetup(websocketServer)
