@@ -1,6 +1,14 @@
 import React , {Component} from 'react';
-import './App.scss';
+import {
+  BrowserRouter as Router,
+  Route,
+  Link
+} from 'react-router-dom';
 import classNames from 'classnames'
+import './App.scss';
+import Dashboard from './Dashboard'
+import Settings from './Settings'
+import Sensors from './Sensors'
 
 class App extends Component{
   state = {
@@ -41,7 +49,15 @@ class App extends Component{
           </div>
         </div>
       </nav>
-      
+      <section>
+        <Router>
+          <div className="container">
+            <Route exact path="/" component={Dashboard} />
+            <Route path="/sensors" component={Sensors} />
+            <Route path="/settings" component={Settings} />
+          </div>
+        </Router>
+      </section>
     </div>
   );
   }
