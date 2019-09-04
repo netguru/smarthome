@@ -21,14 +21,13 @@ const Sensor = (props) => {
     }
     return `${process.env.PUBLIC_URL}/icons/${icons}/${transform.icon}-${data}.png`
   }
-
   return (
     <div className="tile is-parent is-4">
       <div className="tile is-child box">
       <h1 className="title"> {props.value.name}</h1>
       {props.value.transforms.map((transform)=>{
         return (
-        <div className="level is-mobile" key={transform.id}>
+        <div className="level is-mobile" key={transform.id} onClick={() => props.transformClicked(transform)}>
           <div className="level-left">
             <div className="level-item">
               <p className="subtitle">{transform.name}</p>
