@@ -1,4 +1,4 @@
-import React , {Component} from 'react';
+import React, { Component } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -10,56 +10,54 @@ import Dashboard from './Dashboard'
 import Settings from './Settings'
 import Sensors from './Sensors'
 
-class App extends Component{
+class App extends Component {
   state = {
     navMenuActive: false,
   }
   handleHamburgerClick = (e) => {
     e.preventDefault();
-    this.setState({...this.state, navMenuActive: !this.state.navMenuActive});
+    this.setState({ ...this.state, navMenuActive: !this.state.navMenuActive });
   }
 
-  render(){
-  return (
-    <div>
-      <nav class="navbar is-fixed-top" role="navigation">
-      <div class="navbar-brand">
-        <div role="button" 
-        className={classNames({"navbar-burger": true, "is-active": this.state.navMenuActive })}
-           onClick={this.handleHamburgerClick}>
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-         </div>
-      </div>
-        <div className={classNames({"navbar-menu": true, "is-active": this.state.navMenuActive })} >
-          <div class="navbar-start">
-            <a class="navbar-item">
-              Dashboard
-            </a>
-            <a class="navbar-item">
-              Sensors
-            </a>
-          </div>
+  handleLinkClick = (e) => {
+    this.setState({ ...this.state, navMenuActive: false });
+  }
 
-          <div class="navbar-end">
-          <a class="navbar-item">
-              Settings
-            </a>
+  render() {
+    return (
+      <Router>
+        <nav className="navbar is-fixed-top" role="navigation">
+          <div className="navbar-brand">
+            <div role="button"
+              className={classNames({ "navbar-burger": true, "is-active": this.state.navMenuActive })}
+              onClick={this.handleHamburgerClick}>
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+              <span aria-hidden="true"></span>
+            </div>
           </div>
-        </div>
-      </nav>
-      <section>
-        <Router>
+          <div className={classNames({ "navbar-menu": true, "is-active": this.state.navMenuActive })} >
+            <div className="navbar-start">
+              <Link to="/" className="navbar-item" onClick={this.handleLinkClick}>Dashboard</Link>
+              <Link to="/sensors" className="navbar-item" onClick={this.handleLinkClick}>Sensors</Link>
+            </div>
+
+            <div className="navbar-end">
+              <Link to="/settings" className="navbar-item" onClick={this.handleLinkClick}>Settings</Link>
+            </div>
+          </div>
+        </nav>
+
+        <section className="section">
           <div className="container">
-            <Route exact path="/" component={Dashboard} />
-            <Route path="/sensors" component={Sensors} />
-            <Route path="/settings" component={Settings} />
+          <Route exact path="/" component={Dashboard} />
+          <Route path="/sensors" component={Sensors} />
+          <Route path="/settings" component={Settings} />
           </div>
-        </Router>
-      </section>
-    </div>
-  );
+          
+        </section>
+      </Router>
+    );
   }
 }
 
