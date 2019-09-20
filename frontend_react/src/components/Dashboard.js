@@ -1,17 +1,23 @@
 import React, {useState, useEffect} from 'react';
 import Sensor from '../views/Sensor'
+import EditSensor from '../views/EditSensor'
 
-const chunk = (arr, size = 2) => {
-  const newArr = []
-  for (let i = 0; i < arr.length; i += size) {
-    newArr.push(arr.slice(i, i + size))
-  }
-  return newArr
+
+//TODO:
+//1. error handling
+
+
+const fabStyle = {
+  bottom: "0px",
+  position: "fixed",
+  margin: "1em",
+  right: "0px",
 }
 
-const BASE_URL = '0.0.0.0:8080';
+const BASE_URL = '192.168.0.21:8080';
 
 const Dashboard = () => {
+  
   async function fetchData() {
     const result = await fetch(`http://${BASE_URL}/get_sensors_all`)
     const sensors = await result.json();
@@ -24,10 +30,17 @@ const Dashboard = () => {
         sensor.transforms[j] = {...transform, event: eventData}
       }
     }
+    // const sensors = [ 
+    //   {name: "jeden", transforms: [{name:"tr1", id:1, returnType:"INT", event:[{data:10}]}]}, 
+    //   {name: "jeden", transforms: [{name:"tr1", id:1, returnType:"INT", event:[{data:10}]},{name:"tr1", id:1, returnType:"INT", event:[{data:10}]}]}, 
+    //   {name: "jeden", transforms: [{name:"tr1", id:1, returnType:"INT", event:[{data:10}]}]}, 
+    //   {name: "jeden", transforms: [{name:"tr1", id:1, returnType:"INT", event:[{data:10}]}]}, 
+    // ]
     setSensors(sensors);
   }
 
   const [sensors, setSensors] = useState([])
+
 
   useEffect(() => {
     fetchData();
@@ -76,27 +89,34 @@ const Dashboard = () => {
             })
             console.log(result)
             break;
-        
           default:
             break;
         }
-        
     }
   }
 
+  const [editSensorDialog, showEditDialog] = useState({isActive: false})
+
   return (
+     <section>
       <section>
-        {
-          chunk(sensors, 3).map( (slice, index) =>{
-              return (
-              <div className="tile is-parent" key={index}>
-                {slice.map((sensor)=>{
-                  return (<Sensor key={sensor.id} value={sensor} transformClicked={transformClicked}/>)
-                })}
-              </div>
-              );
-          })
-        }
+        <div className="buttons" >
+          {sensors.map((sensor)=>{
+            return (<Sensor key={sensor.id} value={sensor} transformClicked={transformClicked} editClicked={()=> showEditDialog({isActive: true, sensor: sensor})}/>)
+          })}
+        </div>
+      </section>
+     
+        <div className="button is-primary" style={fabStyle} onClick={() => showEditDialog({isActive: true, sensor: null})}>
+          <span className="icon">
+            <i className="material-icons">add</i>
+          </span>
+        </div>
+
+        <EditSensor isActive={editSensorDialog.isActive} 
+                    sensor={editSensorDialog.sensor}
+                    closeDialog={()=>showEditDialog({isActive: false})}
+                    />
       </section>
   );
 }

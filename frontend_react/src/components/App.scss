@@ -2,13 +2,16 @@
 
 @import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
 $family-sans-serif: "Nunito", sans-serif;
-$purple: #8A4D76;
-$pink: #FA7C91;
+
+$accent: rgb(82, 172, 82);
 $beige-lighter: #EFF0EB;
-$primary: $purple;
-$link: $pink;
+$primary: rgb(59, 49, 151);
+$link: $accent;
 $body-background-color: $beige-lighter;
 $gap: 32px;
+
+$material-icons-font-path: '~material-icons/iconfont/';
+@import '~material-icons/iconfont/material-icons.scss';
 
 @import '~bulma/bulma'
 

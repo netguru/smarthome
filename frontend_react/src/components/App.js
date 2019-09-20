@@ -8,7 +8,6 @@ import classNames from 'classnames'
 import './App.scss';
 import Dashboard from './Dashboard'
 import Settings from './Settings'
-import Sensors from './Sensors'
 
 class App extends Component {
   state = {
@@ -39,7 +38,6 @@ class App extends Component {
           <div className={classNames({ "navbar-menu": true, "is-active": this.state.navMenuActive })} >
             <div className="navbar-start">
               <Link to="/" className="navbar-item" onClick={this.handleLinkClick}>Dashboard</Link>
-              <Link to="/sensors" className="navbar-item" onClick={this.handleLinkClick}>Sensors</Link>
             </div>
 
             <div className="navbar-end">
@@ -51,7 +49,6 @@ class App extends Component {
         <section className="section">
           <div className="container">
           <Route exact path="/" component={Dashboard} />
-          <Route path="/sensors" component={Sensors} />
           <Route path="/settings" component={Settings} />
           </div>
           
