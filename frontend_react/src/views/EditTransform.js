@@ -77,6 +77,9 @@ const TransformEdit = (props) => {
     const [state, setState] = useState({ expanded: false })
 
     let transform = props.transform
+    if(transform.returnType == null){
+        transform.returnType = "BOOLEAN"
+    }
     let bg = NONE;
     switch (transform.action) {
         case "ADD":

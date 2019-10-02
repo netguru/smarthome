@@ -21,7 +21,7 @@ const Sensor = (props) => {
     return `${process.env.PUBLIC_URL}/icons/${icons}/${transform.icon}-${data}.png`
   }
   return (
-    <div className="tile is-parent is-4">
+    <div className="tile is-parent is-4" style={{alignSelf: 'flex-start'}}>
       <div className="tile is-child box">
         <div className="level is-mobile">
           <div className="level-left">
@@ -47,15 +47,16 @@ const Sensor = (props) => {
           </div>
           <div className="level-right">
             <div className="level-item">
-              { (transform.icon === null || transform.returnType==='FLOAT' || transform.returnType==='STRING') &&
+              {transform.event[0] == null &&
+                <span>no data</span>
+              }
+              { transform.event[0] != null && (transform.icon === null || transform.returnType==='FLOAT' || transform.returnType==='STRING') &&
                 transform.event[0].data
               }
               { (transform.returnType==='BOOLEAN' || transform.returnType==='INT') && transform.event[0] != null &&
                 <img src={getPath(transform, transform.event[0])} width="30px"/>
               }
-              {transform.event[0] == null &&
-                <span>no data</span>
-              }
+              
             </div>
           </div>
         </div>);

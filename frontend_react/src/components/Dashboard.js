@@ -114,6 +114,15 @@ const Dashboard = () => {
     fetchData();
   }
 
+  const deleteClicked = async (sensor) => {
+    console.log(sensor);
+    const result = await fetch(`http://${BASE_URL}/remove_sensor/${sensor.id}`, {
+        method: 'DELETE'
+      })
+    showEditDialog({isActive: false});
+    fetchData();
+  }
+
   const [editSensorDialog, showEditDialog] = useState({isActive: false})
 
   return (
@@ -136,6 +145,7 @@ const Dashboard = () => {
                     sensor={editSensorDialog.sensor}
                     closeDialog={()=>showEditDialog({isActive: false})}
                     saveClicked={ saveClicked }
+                    deleteClicked={deleteClicked}
                     />
       </section>
   );

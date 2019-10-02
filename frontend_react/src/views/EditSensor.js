@@ -62,6 +62,7 @@ const EditSensor = (props) => {
         </section>
         <footer className="modal-card-foot">
           <button className="button is-success" onClick={()=> props.saveClicked(sensor)}>Save changes</button>
+          <button className="button is-danger" onClick={()=> props.deleteClicked(sensor)}>Delete sensor</button>
           <button className="button" onClick={props.closeDialog}>Cancel</button>
         </footer>
       </div>
