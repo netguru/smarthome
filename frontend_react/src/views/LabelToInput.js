@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const LabelToInput = (props) => {
 
     const [state, setState] = useState({show: false})
+    useEffect(()=>{
+        setState({show: false})
+      }, [])
 
     const editTitleKeyDown = (e) => {
         if (e.key === 'Enter') {

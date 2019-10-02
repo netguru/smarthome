@@ -14,7 +14,7 @@ const fabStyle = {
   right: "0px",
 }
 
-const BASE_URL = '192.168.0.21:8080';
+const BASE_URL = '0.0.0.0:8080';
 
 const Dashboard = () => {
   
@@ -66,7 +66,6 @@ const Dashboard = () => {
   }, [])
 
   const transformClicked = async (transform) => {
-    console.log(transform)
     if(transform.writable){
         let value = transform.event[0].data
 
@@ -95,6 +94,26 @@ const Dashboard = () => {
     }
   }
 
+  const saveClicked = async (sensor) => {
+    console.log(sensor)
+    if(sensor.isNew){
+      const result = await fetch(`http://${BASE_URL}/add_sensor`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(sensor)
+      })
+
+    } else {
+      const result = await fetch(`http://${BASE_URL}/modify_sensor/${sensor.id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(sensor)
+      })
+    }
+    showEditDialog({isActive: false});
+    fetchData();
+  }
+
   const [editSensorDialog, showEditDialog] = useState({isActive: false})
 
   return (
@@ -116,6 +135,7 @@ const Dashboard = () => {
         <EditSensor isActive={editSensorDialog.isActive} 
                     sensor={editSensorDialog.sensor}
                     closeDialog={()=>showEditDialog({isActive: false})}
+                    saveClicked={ saveClicked }
                     />
       </section>
   );

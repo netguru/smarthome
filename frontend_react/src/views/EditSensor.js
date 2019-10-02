@@ -5,7 +5,7 @@ import LabelToInput from './LabelToInput';
 import TransformEdit from './EditTransform';
 
 const EditSensor = (props) => {
-  const [sensor, editSensor] = useState()
+  const [sensor, editSensor] = useState({name: "Add sensor", transforms: [], isNew: true})
 
   useEffect(()=>{
     let init = {name: "Add sensor", transforms: [], isNew: true}
@@ -21,12 +21,7 @@ const EditSensor = (props) => {
       <div className="modal-card">
         <header className="modal-card-head">
           <div className="modal-card-title">
-              {sensor &&
-                <LabelToInput name={sensor.name} valueChanged={(value)=> {editSensor({...sensor, name: value})}} /> 
-              }
-              {!sensor && 
-                <LabelToInput name="Add sensor" valueChanged={(value)=> editSensor({...sensor, name: value})}/>
-              }
+              <LabelToInput name={sensor.name} valueChanged={(value)=> {editSensor({...sensor, name: value})}} /> 
           </div>
           <button className="delete" style={{ margin: "10px" }} aria-label="close" onClick={props.closeDialog}></button>
         </header>
@@ -66,7 +61,7 @@ const EditSensor = (props) => {
           </div>
         </section>
         <footer className="modal-card-foot">
-          <button className="button is-success">Save changes</button>
+          <button className="button is-success" onClick={()=> props.saveClicked(sensor)}>Save changes</button>
           <button className="button" onClick={props.closeDialog}>Cancel</button>
         </footer>
       </div>

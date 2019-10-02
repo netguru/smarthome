@@ -50,8 +50,11 @@ const Sensor = (props) => {
               { (transform.icon === null || transform.returnType==='FLOAT' || transform.returnType==='STRING') &&
                 transform.event[0].data
               }
-              { (transform.returnType==='BOOLEAN' || transform.returnType==='INT') &&
+              { (transform.returnType==='BOOLEAN' || transform.returnType==='INT') && transform.event[0] != null &&
                 <img src={getPath(transform, transform.event[0])} width="30px"/>
+              }
+              {transform.event[0] == null &&
+                <span>no data</span>
               }
             </div>
           </div>
