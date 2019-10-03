@@ -5,7 +5,13 @@ import EditSensor from '../views/EditSensor'
 
 //TODO:
 //1. error handling
-
+const chunk = (arr, size = 2) => {
+  const newArr = []
+  for (let i = 0; i < arr.length; i += size) {
+    newArr.push(arr.slice(i, i + size))
+  }
+  return newArr
+}
 
 const fabStyle = {
   bottom: "0px",
@@ -129,11 +135,17 @@ const Dashboard = () => {
   return (
      <section>
       <section>
-        <div className="buttons" >
-          {sensors.map((sensor)=>{
-            return (<Sensor key={sensor.id} value={sensor} transformClicked={transformClicked} editClicked={()=> showEditDialog({isActive: true, sensor: sensor})}/>)
-          })}
-        </div>
+      {
+          chunk(sensors, 3).map( (slice, index) =>{
+              return (
+              <div className="tile is-parent" key={index}>
+                {slice.map((sensor)=>{
+                  return (<Sensor key={sensor.id} value={sensor} transformClicked={transformClicked} editClicked={()=> showEditDialog({isActive: true, sensor: sensor})}/>)
+                })}
+              </div>
+              );
+          })
+        }
       </section>
      
         <div className="button is-success" style={fabStyle} onClick={() => showEditDialog({isActive: true, sensor: null})}>
@@ -153,3 +165,5 @@ const Dashboard = () => {
 }
 
 export default Dashboard;
+
+
