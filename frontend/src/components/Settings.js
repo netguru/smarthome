@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 
-const BASE_URL = '0.0.0.0:8080';
+const BASE_URL = `${window.location.hostname}:${window.location.port}`;
 
 const Settings = () => {
 

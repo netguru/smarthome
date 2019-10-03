@@ -71,10 +71,10 @@ node {
 }
 
 task installFrontentDeps(type: YarnTask){
-    args = ['install']
+    args = ['install', '--production']
 }
 task compileFrontEnd(type : YarnTask) {
     args = ['build']
 }
-//compileFrontEnd.dependsOn(installFrontentDeps)
-//processResources.dependsOn(compileFrontEnd)
+compileFrontEnd.dependsOn(installFrontentDeps)
+processResources.dependsOn(compileFrontEnd)
