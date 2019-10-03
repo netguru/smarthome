@@ -117,8 +117,9 @@ const Dashboard = () => {
   const deleteClicked = async (sensor) => {
     console.log(sensor);
     const result = await fetch(`http://${BASE_URL}/remove_sensor/${sensor.id}`, {
-        method: 'DELETE'
-      })
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+      });
     showEditDialog({isActive: false});
     fetchData();
   }
@@ -135,7 +136,7 @@ const Dashboard = () => {
         </div>
       </section>
      
-        <div className="button is-primary" style={fabStyle} onClick={() => showEditDialog({isActive: true, sensor: null})}>
+        <div className="button is-success" style={fabStyle} onClick={() => showEditDialog({isActive: true, sensor: null})}>
           <span className="icon">
             <i className="material-icons">add</i>
           </span>
