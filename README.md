@@ -28,6 +28,7 @@ sudo cp bin/smarthome.service /etc/systemd/system/smarthome.service
     
 4. run the service: 
 ```bash
+sudo systemctl enable smarthome.service
 sudo systemctl start smarthome.service
 ```
 5. if you want to read logfile of the service you can run:

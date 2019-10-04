@@ -36,7 +36,7 @@ class Database {
     fun connect(config: Config) {
         try {
             val source = HikariDataSource().apply {
-                jdbcUrl = "jdbc:postgresql://${config[Server.dbUrl]}/"
+                jdbcUrl = "jdbc:postgresql://${config[Server.dbUrl]}"
                 username = config[Server.dbUser]
                 password = config[Server.dbPass]
                 minimumIdle = 1

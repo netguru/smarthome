@@ -1,10 +1,10 @@
 {
-    "server": {
-      "mqttUrl": "",
-      "mqttUser": "",
-      "mqttPass": "",
-      "dbUrl": "",
-      "dbUser": "",
-      "dbPass": ""
-    }
+  "server" : {
+    "mqttUrl" : "tcp://192.168.0.21:1883",
+    "mqttUser" : "pi",
+    "mqttPass" : "spitulis",
+    "dbUrl" : "192.168.0.21:5432/pi",
+    "dbUser" : "pi",
+    "dbPass" : "spitulis"
   }
+}
