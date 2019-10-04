@@ -103,14 +103,14 @@ const Dashboard = () => {
   const saveClicked = async (sensor) => {
     console.log(sensor)
     if(sensor.isNew){
-      const result = await fetch(`http://${BASE_URL}/add_sensor`, {
+      await fetch(`http://${BASE_URL}/add_sensor`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(sensor)
       })
 
     } else {
-      const result = await fetch(`http://${BASE_URL}/modify_sensor/${sensor.id}`, {
+      await fetch(`http://${BASE_URL}/modify_sensor/${sensor.id}`, {
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(sensor)
@@ -122,7 +122,7 @@ const Dashboard = () => {
 
   const deleteClicked = async (sensor) => {
     console.log(sensor);
-    const result = await fetch(`http://${BASE_URL}/remove_sensor/${sensor.id}`, {
+    await fetch(`http://${BASE_URL}/remove_sensor/${sensor.id}`, {
         method: 'DELETE',
         headers: {'Content-Type': 'application/json'},
       });

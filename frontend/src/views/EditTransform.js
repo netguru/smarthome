@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const REMOVE = {
     background: 'rgba(180, 0, 0, 0.2)',
