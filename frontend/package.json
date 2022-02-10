@@ -7,7 +7,7 @@
     "classnames": "^2.2.6",
     "clone-deep": "^4.0.1",
     "material-icons": "^0.3.1",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "react": "^16.9.0",
     "react-blockly": "^4.1.0",
     "react-dom": "^16.9.0",
